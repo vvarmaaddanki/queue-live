@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: queue-live-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: queue_live
+      POSTGRES_USER: queue_user
+      POSTGRES_PASSWORD: queue_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U queue_user -d queue_live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: queue-live-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
