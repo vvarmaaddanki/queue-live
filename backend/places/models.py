@@ -1,6 +1,5 @@
 import uuid
 from statistics import median
-
 from django.conf import settings
 from django.db import models
 
@@ -20,7 +19,7 @@ class Place(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def __str__(self):
         return self.name
 
 
@@ -62,7 +61,7 @@ class Queue(models.Model):
     default_minutes = models.PositiveSmallIntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def __str__(self):
         return self.name
 
     def average_minutes(self):

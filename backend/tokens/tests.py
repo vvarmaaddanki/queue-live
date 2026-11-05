@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from places.models import Place, Queue
 from tokens.models import Token
 from tokens.services import create_token
@@ -27,33 +28,42 @@ class TokenModelTest(TestCase):
 
     def test_token_creation(self):
         token = Token.objects.create(
-            queue=self.queue,
+            queue_id=self.queue.pk,
             service_date="2026-11-02",
             number=1,
-            customer_name="Test Customer",
-            status=Token.Status.WAITING,
+            name="Test Customer",
         )
 
-        self.assertEqual(token.number, 1)
+        self.assertEqual(
+            token.number,
+            1,
+        )
 
         self.assertEqual(
-            token.status,
-            Token.Status.WAITING,
+            token.name,
+            "Test Customer",
         )
 
     def test_token_numbers_increment(self):
         # Create the first token
         first = create_token(
-            queue=self.queue,
-            customer_name="Customer 1",
+            queue_id=self.queue.pk,
+            name="Customer 1",
         )
 
         # Create the second token
         second = create_token(
-            queue=self.queue,
-            customer_name="Customer 2",
+            queue_id=self.queue.pk,
+            name="Customer 2",
         )
 
         # Verify token numbers
-        self.assertEqual(first.number, 1)
-        self.assertEqual(second.number, 2)
+        self.assertEqual(
+            first.number,
+            1,
+        )
+
+        self.assertEqual(
+            second.number,
+            2,
+        )

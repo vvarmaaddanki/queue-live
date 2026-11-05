@@ -1,8 +1,9 @@
-import uuid
 from django.db import models
+from places.models import Queue
 
 
 class Token(models.Model):
+
     class Status(models.TextChoices):
         WAITING = "waiting", "Waiting"
         SERVING = "serving", "Serving"
@@ -10,41 +11,56 @@ class Token(models.Model):
         SKIPPED = "skipped", "Skipped"
         CANCELLED = "cancelled", "Cancelled"
 
-    public_id = models.UUIDField(
-        default=uuid.uuid4,
-        unique=True,
-        editable=False,
-    )
+    name = models.CharField(max_length=100)
+
     queue = models.ForeignKey(
-        "places.Queue",
+        Queue,
         on_delete=models.CASCADE,
         related_name="tokens",
+        null=True,
+        blank=True,
     )
+
     service_date = models.DateField()
+
     number = models.PositiveIntegerField()
-    customer_name = models.CharField(max_length=80)
-    phone = models.CharField(max_length=15, blank=True)
+
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
         default=Status.WAITING,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    started_at = models.DateTimeField(null=True, blank=True)
-    finished_at = models.DateTimeField(null=True, blank=True)
+
+    started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    finished_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["queue", "service_date", "number"],
-                name="unique_number_per_queue_day",
-            )
-        ]
-        indexes = [
-            models.Index(
-                fields=["queue", "service_date", "status"]
+                fields=[
+                    "queue",
+                    "service_date",
+                    "number",
+                ],
+                name="unique_token_per_queue_date_number",
             )
         ]
 
-    def _str_(self):
-        return f"Token {self.number} - {self.customer_name}"
+        ordering = ["number"]
+
+    def __str__(self):
+        return (
+            f"{self.name} - Queue {self.queue_id} "
+            f"- Token {self.number}"
+        )
