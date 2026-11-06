@@ -49,18 +49,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='place',
-            name='id',
-            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
-        ),
-        migrations.AlterField(
-            model_name='place',
             name='name',
             field=models.CharField(max_length=120),
-        ),
-        migrations.AlterField(
-            model_name='queue',
-            name='id',
-            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
         ),
         migrations.AlterField(
             model_name='queue',
