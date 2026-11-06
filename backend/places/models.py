@@ -10,6 +10,11 @@ class Place(models.Model):
         SALON = "salon", "Salon"
         TUITION = "tuition", "Tuition centre"
         OTHER = "other", "Other"
+    id = models.UUIDField(
+    primary_key=True,
+    default=uuid.uuid4,
+    editable=False,
+)
 
     name = models.CharField(max_length=120)
     kind = models.CharField(
@@ -51,6 +56,11 @@ class Queue(models.Model):
         unique=True,
         editable=False,
     )
+    id = models.UUIDField(
+    primary_key=True,
+    default=uuid.uuid4,
+    editable=False,
+)
     place = models.ForeignKey(
         Place,
         on_delete=models.CASCADE,
