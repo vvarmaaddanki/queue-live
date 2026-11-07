@@ -9,6 +9,10 @@ The application allows customers to join a queue and track their token status, w
 Traditional queue management systems often rely on paper tokens and manual coordination, leading to long waiting times, overcrowding, and poor customer experiences.
 
 **Live Queue App** aims to solve these problems through a digital queue management system that simplifies customer registration, token management, and queue monitoring.
+Live Demo     	URL
+Frontend : https://queue-live-frontend.onrender.com
+Backend  : https://queue-live-backend.onrender.com
+GitHub	 : https://github.com/vvarmaaddanki/queue-live
 
 ### 🎯 Key Objectives
 
@@ -179,7 +183,7 @@ python manage.py runserver
 Backend URL:
 
 ```text
-http://127.0.0.1:8000/
+http://127.0.0.1:8000
 ```
 
 ### 4. Frontend Setup
@@ -205,7 +209,7 @@ npm run dev
 Frontend URL:
 
 ```text
-http://localhost:5173/
+https://localhost:5173/
 ```
 
 ## 🔗 API Integration
