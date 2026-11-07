@@ -1,0 +1,282 @@
+
+/* =========================================
+   JOIN QUEUE — BLACK + PURPLE THEME
+========================================= */
+
+.join-container {
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 24px;
+  overflow: visible;
+  background: #0b0b10;
+  color: #f5f5f7;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  position: relative;
+}
+
+/* Back button */
+
+.back-button {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #17171f;
+  color: #f5f5f7;
+  border: 1px solid #343442;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.back-button:hover {
+  background: #252532;
+  border-color: #8b5cf6;
+  transform: translateY(-2px);
+}
+
+/* Join card */
+
+.join-card {
+  width: 100%;
+  max-width: 520px;
+  box-sizing: border-box;
+  margin-top: 80px;
+  padding: 42px;
+  border: 1px solid #2b2938;
+  border-radius: 24px;
+  background: #17171f;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Heading */
+
+.join-card h1 {
+  margin: 0 0 12px;
+  color: #f5f5f7;
+  font-size: 34px;
+  font-weight: 750;
+  letter-spacing: -1px;
+  text-align: center;
+}
+
+.form-description {
+  margin: 0 0 30px;
+  color: #a1a1aa;
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Form */
+
+.join-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.form-group label {
+  color: #d4d4dc;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+/* Inputs and dropdown */
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 15px 16px;
+  border: 1px solid #343442;
+  border-radius: 12px;
+  outline: none;
+  background: #0f0f16;
+  color: #f5f5f7;
+  font-family: inherit;
+  font-size: 15px;
+  transition: 0.2s ease;
+}
+
+.form-group input::placeholder {
+  color: #71717f;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #8b5cf6;
+  background: #12111b;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+}
+
+.form-group select {
+  cursor: pointer;
+}
+
+/* Join button */
+
+.join-card form button,
+.success-container > button {
+  width: 100%;
+  margin-top: 4px;
+  padding: 15px 18px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(139, 92, 246, 0.22);
+  transition: 0.2s ease;
+}
+
+.join-card form button:hover,
+.success-container > button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(139, 92, 246, 0.3);
+}
+
+.join-card form button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Error message */
+
+.join-container .error-message {
+  padding: 12px 14px;
+  border: 1px solid #7f1d1d;
+  border-radius: 10px;
+  background: #2a1117;
+  color: #fca5a5;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Token confirmation */
+
+.success-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.success-container h2 {
+  margin: 0;
+  color: #a78bfa;
+  font-size: 25px;
+  font-weight: 750;
+}
+
+.success-container h1 {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 8px 0;
+  padding: 24px 16px;
+  border: 1px solid #4c367c;
+  border-radius: 16px;
+  background: #211832;
+  color: #c4b5fd;
+  font-size: 28px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.success-container p {
+  color: #a1a1aa;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.success-container strong {
+  color: #f5f5f7;
+}
+
+.success-container .form-description {
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+/* Responsive */
+
+@media (max-width: 600px) {
+  .join-container {
+    padding: 90px 16px 28px;
+  }
+
+  .back-button {
+    top: 16px;
+    left: 16px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .join-card {
+    margin-top: 0;
+    padding: 28px 22px;
+    border-radius: 20px;
+  }
+
+  .join-card h1 {
+    font-size: 29px;
+  }
+
+  .form-description {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .join-card form {
+    gap: 17px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 14px;
+    font-size: 14px;
+  }
+
+  .success-container h1 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 380px) {
+  .join-card {
+    padding: 24px 18px;
+  }
+
+  .join-card h1 {
+    font-size: 26px;
+  }
+
+  .back-button {
+    padding: 9px 13px;
+    font-size: 13px;
+  }
+}

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import "./join.css";
 
 type Queue = {
-  id: number;
+  id: string;
   public_id: string;
   name: string;
   place_name?: string;
@@ -16,7 +17,7 @@ type JoinProps = {
 type JoinedToken = {
   token_id: number;
   name: string;
-  queue_id: number;
+  queue_id: string;
   service_date: string;
   number: number;
   status: string;
@@ -28,7 +29,7 @@ type JoinedToken = {
 type TokenStatusResponse = {
   token_id: number;
   name: string;
-  queue_id: number;
+  queue_id: string;
   token_number: number;
   service_date: string;
   status: string;
@@ -39,7 +40,7 @@ type TokenStatusResponse = {
 };
 
 const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+  import.meta.env.VITE_API_BASE_URL || "https://queue-live-backend.onrender.com"
 ).replace(/\/$/, "");
 
 export default function Join({ queues, onBack }: JoinProps) {

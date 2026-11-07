@@ -1,96 +1,420 @@
 .token-status-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 24px;
-  background: #f3f6fb;
-  font-family: Arial, sans-serif;
+  padding: 40px 20px;
+  background:
+    radial-gradient(circle at top left, rgba(139, 92, 246, 0.16), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.1), transparent 35%),
+    #0b0b10;
+  color: #f5f3ff;
+  font-family: Inter, Arial, Helvetica, sans-serif;
 }
 
 .token-status-card {
   width: 100%;
-  max-width: 480px;
-  padding: 32px;
-  text-align: center;
-  background: white;
-  border-radius: 18px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  max-width: 500px;
+  padding: 30px;
+  background: rgba(23, 23, 31, 0.96);
+  border: 1px solid #2b2938;
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.status-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #2b2938;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  color: #ffffff;
+  font-size: 23px;
+  font-weight: 800;
+  box-shadow: 0 0 22px rgba(139, 92, 246, 0.25);
+}
+
+.brand-copy {
+  text-align: left;
 }
 
 .status-label {
-  color: #2563eb;
-  font-weight: bold;
-  letter-spacing: 2px;
+  margin: 0;
+  color: #a78bfa;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+}
+
+.brand-copy p {
+  margin: 4px 0 0;
+  color: #a1a1aa;
+  font-size: 12px;
+}
+
+.connection-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  padding: 7px 10px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.connection-indicator.connected {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+}
+
+.connection-indicator.polling {
+  background: #272731;
+  color: #a1a1aa;
+}
+
+.connection-dot,
+.live-note-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.token-intro {
+  padding: 30px 0 22px;
+  text-align: center;
+}
+
+.success-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.token-intro h1 {
+  margin: 0;
+  color: #f5f3ff;
+  font-size: 27px;
+  letter-spacing: -0.7px;
+}
+
+.token-intro p {
+  margin: 9px 0 0;
+  color: #a1a1aa;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .token-number {
-  margin: 24px 0;
-  padding: 20px;
-  background: #eff6ff;
-  border-radius: 14px;
+  padding: 25px 20px 22px;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    rgba(139, 92, 246, 0.12),
+    rgba(23, 23, 31, 0.8)
+  );
+  text-align: center;
 }
 
-.token-number span,
+.token-number-label {
+  display: block;
+  color: #c4b5fd;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
 .token-number strong {
   display: block;
-}
-
-.token-number strong {
-  margin-top: 8px;
-  font-size: 48px;
-  color: #1d4ed8;
+  margin: 8px 0 13px;
+  color: #a78bfa;
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -2px;
+  text-shadow: 0 0 28px rgba(139, 92, 246, 0.25);
 }
 
 .status-badge {
-  display: inline-block;
-  margin: 12px 0;
-  padding: 10px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
   border-radius: 30px;
-  font-weight: bold;
+  font-size: 12px;
+  font-weight: 700;
   text-transform: capitalize;
 }
 
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 .status-badge.waiting {
-  color: #92400e;
-  background: #fef3c7;
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
 }
 
 .status-badge.serving {
-  color: #166534;
-  background: #dcfce7;
+  background: rgba(34, 197, 94, 0.14);
+  color: #4ade80;
 }
 
 .status-badge.done {
-  color: #1d4ed8;
-  background: #dbeafe;
+  background: rgba(59, 130, 246, 0.14);
+  color: #60a5fa;
 }
 
 .status-badge.skipped,
 .status-badge.cancelled {
-  color: #991b1b;
-  background: #fee2e2;
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
 }
 
-.wait-info {
-  margin: 16px 0;
+.customer-greeting {
+  margin: 23px 0 18px;
+  text-align: center;
 }
 
-.status-message {
-  margin: 18px 0;
+.greeting-label {
+  color: #a1a1aa;
+  font-size: 12px;
   font-weight: 600;
 }
 
-.refresh-message {
-  margin-top: 24px;
-  color: #64748b;
+.customer-greeting h2 {
+  margin: 5px 0 0;
+  color: #f5f3ff;
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.wait-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  align-items: center;
+  padding: 20px 10px;
+  border: 1px solid #2b2938;
+  border-radius: 16px;
+  background: #13131b;
+}
+
+.wait-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.metric-icon {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  margin-bottom: 3px;
+  border-radius: 11px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  font-size: 18px;
+}
+
+.wait-metric strong {
+  color: #f5f3ff;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.wait-metric > span:last-child {
+  color: #a1a1aa;
+  font-size: 12px;
+}
+
+.metric-divider {
+  width: 1px;
+  height: 70px;
+  background: #34313f;
+}
+
+.status-message {
+  margin: 20px 0 0;
+  padding: 17px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.status-message strong {
+  display: block;
+  font-size: 16px;
+}
+
+.status-message p {
+  margin: 7px 0 0;
   font-size: 13px;
+  line-height: 1.5;
+}
+
+.serving-message {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+}
+
+.done-message {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+}
+
+.skipped-message {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.live-update-note {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  color: #a1a1aa;
+  font-size: 12px;
+}
+
+.live-note-dot {
+  color: #4ade80;
 }
 
 .home-link {
-  display: inline-block;
-  margin-top: 16px;
-  color: #2563eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 13px 16px;
+  border: 1px solid #383345;
+  border-radius: 12px;
+  color: #c4b5fd;
+  font-size: 14px;
+  font-weight: 700;
   text-decoration: none;
-  font-weight: bold;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.home-link:hover {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.page-footer {
+  margin: 20px 0 0;
+  color: #71717a;
+  font-size: 12px;
+}
+
+.loading-card,
+.error-card {
+  text-align: center;
+}
+
+.loading-card h2,
+.error-card h1 {
+  margin: 15px 0 8px;
+  color: #f5f3ff;
+}
+
+.loading-card p,
+.error-message {
+  color: #a1a1aa;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.loading-spinner {
+  width: 38px;
+  height: 38px;
+  margin: 0 auto;
+  border: 4px solid #30283f;
+  border-top-color: #8b5cf6;
+  border-radius: 50%;
+  animation: token-spin 0.8s linear infinite;
+}
+
+.error-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+@keyframes token-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .token-status-page {
+    padding: 20px 14px;
+  }
+
+  .token-status-card {
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+
+  .token-intro {
+    padding: 25px 0 20px;
+  }
+
+  .token-intro h1 {
+    font-size: 24px;
+  }
+
+  .token-number {
+    padding: 22px 14px;
+  }
+
+  .token-number strong {
+    font-size: 48px;
+  }
+
+  .wait-metrics {
+    padding: 17px 6px;
+  }
+
+  .wait-metric strong {
+    font-size: 23px;
+  }
+
+  .wait-metric > span:last-child {
+    font-size: 11px;
+  }
 }

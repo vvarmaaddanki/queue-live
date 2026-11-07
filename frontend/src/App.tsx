@@ -5,7 +5,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import "./App.css";
 
 type Queue = {
-  id: number;
+  id: string;
   public_id: string;
   name: string;
   place: string;

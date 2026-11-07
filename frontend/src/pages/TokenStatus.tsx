@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./TokenStatus.css";
@@ -12,6 +11,8 @@ type TokenStatusData = {
   customers_ahead: number;
   estimated_wait_minutes: number;
 };
+
+const API_BASE_URL = "https://queue-live-backend.onrender.com"
 
 export default function TokenStatus() {
   const { tokenId } = useParams<{ tokenId: string }>();
@@ -30,11 +31,12 @@ export default function TokenStatus() {
 
     let isActive = true;
     let socket: WebSocket | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
 
     const fetchStatus = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/tokens/${tokenId}/status/`
+          `${API_BASE_URL}/api/tokens/${tokenId}/status/`
         );
 
         if (!response.ok) {
@@ -47,12 +49,16 @@ export default function TokenStatus() {
           setToken(data);
           setError("");
         }
+
+        return data;
       } catch {
         if (isActive) {
           setError(
             "Could not connect to the server. Check that Django is running."
           );
         }
+
+        return null;
       } finally {
         if (isActive) {
           setLoading(false);
@@ -60,19 +66,17 @@ export default function TokenStatus() {
       }
     };
 
-    // Load the latest status when the page opens.
-    fetchStatus();
-
-    // Connect to live updates for this token's queue.
-    const connectWebSocket = () => {
+    const connectWebSocket = (queueId: number) => {
       if (!isActive) return;
 
       socket = new WebSocket(
-        `ws://127.0.0.1:8000/ws/queues/${token?.queue_id ?? ""}/`
+        `ws://queue-live-backend.onrender.com/ws/queues/${queueId}/`
       );
 
       socket.onopen = () => {
-        if (isActive) setLiveConnected(true);
+        if (isActive) {
+          setLiveConnected(true);
+        }
       };
 
       socket.onmessage = (event) => {
@@ -81,7 +85,6 @@ export default function TokenStatus() {
         try {
           const update = JSON.parse(event.data);
 
-          // Refresh status after a queue event.
           if (
             update.event === "token_called" ||
             update.event === "token_completed" ||
@@ -95,45 +98,37 @@ export default function TokenStatus() {
       };
 
       socket.onclose = () => {
-        if (isActive) setLiveConnected(false);
+        if (isActive) {
+          setLiveConnected(false);
+        }
       };
 
       socket.onerror = () => {
-        if (isActive) setLiveConnected(false);
+        if (isActive) {
+          setLiveConnected(false);
+        }
       };
     };
 
-    // Polling is retained as a fallback.
-    const interval = setInterval(fetchStatus, 5000);
+    const initialize = async () => {
+      const data = await fetchStatus();
 
-    // Wait until the initial API response gives us the queue ID.
-    fetch(
-      `http://127.0.0.1:8000/api/tokens/${tokenId}/status/`
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Unable to load token status.");
-        }
-        return response.json();
-      })
-      .then((data: TokenStatusData) => {
-        if (isActive) {
-          setToken(data);
+      if (!isActive || !data) return;
 
-          if (socket) {
-            socket.close();
-          }
+      connectWebSocket(data.queue_id);
 
-          connectWebSocket();
-        }
-      })
-      .catch(() => {
-        // The first fetch already handles the visible error.
-      });
+      // Polling remains as a fallback if WebSocket is unavailable.
+      interval = setInterval(fetchStatus, 5000);
+    };
+
+    initialize();
 
     return () => {
       isActive = false;
-      clearInterval(interval);
+
+      if (interval) {
+        clearInterval(interval);
+      }
 
       if (socket) {
         socket.close();
@@ -142,76 +137,142 @@ export default function TokenStatus() {
   }, [tokenId]);
 
   if (loading) {
-    return <main className="token-status-page">Loading token status...</main>;
+    return (
+      <main className="token-status-page">
+        <section className="token-status-card loading-card">
+          <div className="loading-spinner" />
+          <h2>Loading your token</h2>
+          <p>Please wait while we get your queue status.</p>
+        </section>
+      </main>
+    );
   }
 
   if (error || !token) {
     return (
       <main className="token-status-page">
-        <h2>Token status unavailable</h2>
-        <p>{error || "Token not found."}</p>
-        <Link to="/">Return to home</Link>
+        <section className="token-status-card error-card">
+          <div className="status-icon error-icon">!</div>
+          <p className="status-label">QUEUE LIVE</p>
+          <h1>Token status unavailable</h1>
+          <p className="error-message">{error || "Token not found."}</p>
+          <Link to="/" className="home-link">
+            Return to home
+          </Link>
+        </section>
       </main>
     );
   }
 
   const status = token.status.toLowerCase();
+  const statusLabel = token.status.replaceAll("_", " ");
 
   return (
     <main className="token-status-page">
       <section className="token-status-card">
-        <p className="status-label">QUEUE LIVE</p>
-        <h1>Your Queue Status</h1>
+        <div className="status-card-top">
+          <div className="brand-mark">Q</div>
 
-        <div className="token-number">
-          <span>Your Token Number</span>
-          <strong>{token.token_number}</strong>
+          <div className="brand-copy">
+            <span className="status-label">QUEUE LIVE</span>
+            <p>Live queue tracking</p>
+          </div>
+
+          <div
+            className={`connection-indicator ${
+              liveConnected ? "connected" : "polling"
+            }`}
+          >
+            <span className="connection-dot" />
+            {liveConnected ? "Live" : "Auto"}
+          </div>
         </div>
 
-        <h2>Hello, {token.name}</h2>
+        <div className="token-intro">
+          <div className="success-icon">
+            <span>✓</span>
+          </div>
 
-        <div className={`status-badge ${status}`}>
-          {token.status.replaceAll("_", " ")}
+          <h1>Your queue status</h1>
+          <p>Stay updated while you wait for your turn.</p>
+        </div>
+
+        <div className="token-number">
+          <span className="token-number-label">YOUR TOKEN NUMBER</span>
+          <strong>#{String(token.token_number).padStart(3, "0")}</strong>
+
+          <div className={`status-badge ${status}`}>
+            <span className="status-dot" />
+            {statusLabel}
+          </div>
+        </div>
+
+        <div className="customer-greeting">
+          <span className="greeting-label">Welcome</span>
+          <h2>{token.name}</h2>
         </div>
 
         {status === "waiting" && (
-          <div className="wait-info">
-            <p>
-              <strong>{token.customers_ahead}</strong> customers ahead of you
-            </p>
-            <p>
-              Estimated wait:{" "}
-              <strong>{token.estimated_wait_minutes} minutes</strong>
-            </p>
+          <div className="wait-metrics">
+            <div className="wait-metric">
+              <span className="metric-icon">👥</span>
+              <strong>{token.customers_ahead}</strong>
+              <span>People ahead</span>
+            </div>
+
+            <div className="metric-divider" />
+
+            <div className="wait-metric">
+              <span className="metric-icon">◷</span>
+              <strong>{token.estimated_wait_minutes}</strong>
+              <span>Estimated minutes</span>
+            </div>
           </div>
         )}
 
         {status === "serving" && (
-          <p className="status-message">
-            It is your turn. Please go to the counter.
-          </p>
+          <div className="status-message serving-message">
+            <strong>It’s your turn!</strong>
+            <p>Please proceed to the service counter.</p>
+          </div>
         )}
 
         {status === "done" && (
-          <p className="status-message">Your service is complete.</p>
+          <div className="status-message done-message">
+            <strong>Service completed</strong>
+            <p>Your queue service is complete. Thank you.</p>
+          </div>
         )}
 
         {status === "skipped" && (
-          <p className="status-message">
-            Your token was skipped. Contact the staff.
-          </p>
+          <div className="status-message skipped-message">
+            <strong>Your token was skipped</strong>
+            <p>Please contact the staff for assistance.</p>
+          </div>
         )}
 
-        <p className="refresh-message">
+        {status === "cancelled" && (
+          <div className="status-message skipped-message">
+            <strong>Token cancelled</strong>
+            <p>This queue token is no longer active.</p>
+          </div>
+        )}
+
+        <div className="live-update-note">
+          <span className="live-note-dot" />
           {liveConnected
-            ? "Live updates connected."
-            : "Checking for updates automatically."}
-        </p>
+            ? "Connected to live queue updates"
+            : "Status refreshes automatically"}
+        </div>
 
         <Link to="/" className="home-link">
-          Return to home
+          <span>←</span> Return to home
         </Link>
       </section>
+
+      <p className="page-footer">
+        QueueLive · Smart queue management
+      </p>
     </main>
   );
 }

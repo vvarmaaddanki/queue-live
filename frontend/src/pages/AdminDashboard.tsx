@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { apiRequest } from "../api/client";
 import "./AdminDashboard.css";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api";
+const API_BASE_URL = "https://queue-live-backend.onrender.com/api";
 
 type Queue = {
   id: number;
@@ -336,20 +336,13 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
       {!isAuthenticated ? (
         <main className="admin-main">
-          <section
-            className="admin-current-card"
-            style={{
-              maxWidth: "480px",
-              margin: "50px auto",
-              display: "block",
-            }}
-          >
+          <section className="admin-login-card">
             <p className="admin-eyebrow">STAFF ACCESS</p>
             <h2>Staff Login</h2>
             <p>Log in with your Django staff account to manage the queue.</p>
 
-            <form onSubmit={handleLogin}>
-              <div style={{ marginTop: "20px" }}>
+            <form className="admin-login-form" onSubmit={handleLogin}>
+              <div className="admin-form-field">
                 <label htmlFor="staff-username">Username</label>
                 <input
                   id="staff-username"
@@ -369,7 +362,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                 />
               </div>
 
-              <div style={{ marginTop: "16px" }}>
+              <div className="admin-form-field">
                 <label htmlFor="staff-password">Password</label>
                 <input
                   id="staff-password"

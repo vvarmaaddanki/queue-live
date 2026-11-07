@@ -6,19 +6,23 @@
 
 :root {
   font-family: "Inter", Arial, sans-serif;
-  color: #172033;
-  background: #f8f9fc;
+  color: #f5f3ff;
+  background: #0b0b10;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --primary: #5865f2;
-  --primary-dark: #4652d9;
-  --text-dark: #172033;
-  --text-muted: #687386;
-  --border: #e7eaf1;
+  --primary: #8b5cf6;
+  --primary-dark: #7c3aed;
+  --text-dark: #f5f3ff;
+  --text-muted: #a1a1aa;
+  --border: #2b2936;
   --white: #ffffff;
+
+  --page-bg: #0b0b10;
+  --card-bg: #17171f;
+  --section-bg: #101016;
 }
 
 * {
@@ -34,7 +38,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #f8f9fc;
+  background: var(--page-bg);
 }
 
 button,
@@ -62,7 +66,7 @@ a {
   width: 100%;
   min-height: 100vh;
   overflow: hidden;
-  background: #f8f9fc;
+  background: var(--page-bg);
 }
 
 /* =========================
@@ -77,11 +81,12 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 28px;
-  background: rgba(255, 255, 255, 0.96);
-  border-bottom: 1px solid #edf0f5;
+  background: rgba(11, 11, 16, 0.94);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(14px);
 }
 
 .nav-logo {
@@ -106,6 +111,7 @@ a {
   color: white;
   font-size: 20px;
   font-weight: 800;
+  box-shadow: 0 0 22px rgba(139, 92, 246, 0.25);
 }
 
 .nav-links {
@@ -116,7 +122,7 @@ a {
 }
 
 .nav-links a {
-  color: #586174;
+  color: #c4c1ce;
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -128,21 +134,19 @@ a {
 }
 
 .nav-admin-button {
-  border: none;
+  border: 1px solid #3b334f;
   border-radius: 10px;
   padding: 12px 18px;
-  background: var(--text-dark);
-  color: white;
+  background: #211a31;
+  color: #e9ddff;
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .nav-admin-button:hover {
-  background: #2c3854;
+  background: #302344;
   transform: translateY(-1px);
 }
 
@@ -161,10 +165,10 @@ a {
   background:
     radial-gradient(
       circle at 80% 40%,
-      rgba(88, 101, 242, 0.09),
+      rgba(139, 92, 246, 0.18),
       transparent 34%
     ),
-    linear-gradient(135deg, #ffffff 0%, #f7f8ff 100%);
+    linear-gradient(135deg, #0b0b10 0%, #13101d 100%);
 }
 
 .hero-content {
@@ -173,7 +177,7 @@ a {
 
 .hero-label {
   margin: 0 0 24px;
-  color: var(--primary);
+  color: #b69aff;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 2px;
@@ -205,15 +209,14 @@ a {
   align-items: center;
   justify-content: center;
   padding: 15px 24px;
+  border: 1px solid #a78bfa;
   border-radius: 11px;
   background: var(--primary);
   color: white;
   font-size: 15px;
   font-weight: 700;
-  box-shadow: 0 8px 22px rgba(88, 101, 242, 0.2);
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+  box-shadow: 0 8px 26px rgba(139, 92, 246, 0.25);
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .hero-button:hover {
@@ -234,10 +237,10 @@ a {
   width: 100%;
   max-width: 360px;
   padding: 28px;
-  border: 1px solid #e9ecf5;
+  border: 1px solid #302b40;
   border-radius: 24px;
-  background: white;
-  box-shadow: 0 25px 70px rgba(30, 42, 80, 0.1);
+  background: linear-gradient(145deg, #1c1a27, #14131b);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
 }
 
 .hero-card-header {
@@ -245,8 +248,8 @@ a {
   align-items: center;
   gap: 10px;
   padding-bottom: 22px;
-  border-bottom: 1px solid #edf0f5;
-  color: #596477;
+  border-bottom: 1px solid var(--border);
+  color: #c4c1ce;
   font-size: 14px;
   font-weight: 600;
 }
@@ -272,7 +275,7 @@ a {
 
 .hero-token h2 {
   margin: 0 0 14px;
-  color: var(--primary);
+  color: #b69aff;
   font-size: 48px;
   font-weight: 800;
   letter-spacing: -1px;
@@ -282,8 +285,8 @@ a {
   display: inline-block;
   padding: 7px 15px;
   border-radius: 20px;
-  background: #fff4dc;
-  color: #b77913;
+  background: #3a2d18;
+  color: #f4c66b;
   font-size: 12px;
   font-weight: 700;
 }
@@ -293,7 +296,7 @@ a {
   grid-template-columns: 1fr 1fr;
   gap: 15px;
   padding-top: 22px;
-  border-top: 1px solid #edf0f5;
+  border-top: 1px solid var(--border);
 }
 
 .hero-card-footer div {
@@ -325,11 +328,11 @@ a {
 }
 
 .queue-section {
-  background: #ffffff;
+  background: #0e0e14;
 }
 
 .how-section {
-  background: #f8f9fc;
+  background: #101016;
 }
 
 .section-heading {
@@ -338,7 +341,7 @@ a {
 
 .section-label {
   margin: 0 0 12px;
-  color: var(--primary);
+  color: #b69aff;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 1.8px;
@@ -377,18 +380,15 @@ a {
   padding: 26px;
   border: 1px solid var(--border);
   border-radius: 18px;
-  background: white;
-  box-shadow: 0 8px 24px rgba(30, 42, 80, 0.035);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+  background: var(--card-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .queue-card:hover {
   transform: translateY(-5px);
-  border-color: #d6dbff;
-  box-shadow: 0 18px 35px rgba(30, 42, 80, 0.08);
+  border-color: #66518f;
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.28);
 }
 
 .queue-card-top {
@@ -406,7 +406,8 @@ a {
   align-items: center;
   justify-content: center;
   border-radius: 13px;
-  background: #f0f2ff;
+  background: #29213b;
+  color: #c4b5fd;
   font-size: 22px;
 }
 
@@ -418,13 +419,13 @@ a {
 }
 
 .queue-status.open {
-  background: #e7f9f0;
-  color: #13865c;
+  background: #12352b;
+  color: #65e6b5;
 }
 
 .queue-status.closed {
-  background: #fff0f0;
-  color: #c44949;
+  background: #3b2027;
+  color: #f5a1ad;
 }
 
 .queue-card h3 {
@@ -446,8 +447,8 @@ a {
   margin-top: auto;
   margin-bottom: 22px;
   padding: 15px 0;
-  border-top: 1px solid #edf0f5;
-  border-bottom: 1px solid #edf0f5;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .queue-details div {
@@ -469,7 +470,7 @@ a {
 .join-queue-button {
   width: 100%;
   min-height: 46px;
-  border: none;
+  border: 1px solid #a78bfa;
   border-radius: 10px;
   background: var(--primary);
   color: white;
@@ -483,8 +484,9 @@ a {
 }
 
 .join-queue-button:disabled {
-  background: #d8dce6;
-  color: #777f90;
+  border-color: #393542;
+  background: #302d38;
+  color: #85808f;
 }
 
 /* =========================
@@ -498,16 +500,16 @@ a {
   padding: 35px 24px;
   border: 1px solid var(--border);
   border-radius: 16px;
-  background: white;
+  background: var(--card-bg);
   text-align: center;
   color: var(--text-muted);
   font-size: 15px;
 }
 
 .error-message {
-  border-color: #f4d4d4;
-  background: #fffafa;
-  color: #b64242;
+  border-color: #63323a;
+  background: #21151a;
+  color: #f5a1ad;
 }
 
 .error-message p {
@@ -543,13 +545,13 @@ a {
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 18px;
-  background: white;
+  background: var(--card-bg);
 }
 
 .step-number {
   display: inline-block;
   margin-bottom: 22px;
-  color: var(--primary);
+  color: #b69aff;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -580,7 +582,7 @@ a {
   justify-content: center;
   gap: 12px;
   padding: 45px 8%;
-  background: #ffffff;
+  background: #0b0b10;
   border-top: 1px solid var(--border);
   text-align: center;
 }
@@ -600,7 +602,7 @@ a {
 
 .footer span {
   margin-top: 8px;
-  color: #8b93a3;
+  color: #777281;
   font-size: 13px;
 }
 
@@ -734,4 +736,33 @@ a {
   .how-section {
     padding: 50px 5%;
   }
+}
+:root {
+  color-scheme: dark;
+
+  --bg-primary: #0B0B10;
+  --bg-card: #17171F;
+  --text-primary: #F5F5F7;
+  --text-secondary: #A1A1AA;
+  --accent-purple: #8B5CF6;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+body {
+  color-scheme: dark;
+}
+
+button,
+input,
+select,
+textarea {
+  color-scheme: dark;
 }
