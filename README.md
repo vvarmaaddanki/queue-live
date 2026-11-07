@@ -57,7 +57,7 @@ GitHub	 : https://github.com/vvarmaaddanki/queue-live
 | Database | PostgreSQL |
 | Development Tools | Git, GitHub, Postman |
 | API Testing | Postman |
-| Deployment | [Render] |
+| Deployment | Render |
 
 ## 🏗️ Project Architecture
 
