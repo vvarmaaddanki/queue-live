@@ -53,7 +53,7 @@ Traditional queue management systems often rely on paper tokens and manual coord
 | Database | PostgreSQL |
 | Development Tools | Git, GitHub, Postman |
 | API Testing | Postman |
-| Deployment | [Add your deployment platform] |
+| Deployment | [Render] |
 
 ## 🏗️ Project Architecture
 
@@ -131,7 +131,7 @@ Follow these steps to run the project locally.
 ### 1. Clone the Repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
+https://github.com/vvarmaaddanki/queue-live.git
 ```
 
 ### 2. Navigate to the Project
