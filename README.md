@@ -12,7 +12,6 @@ Traditional queue management systems often rely on paper tokens and manual coord
 Live Demo     	URL
 Frontend : https://queue-live-frontend.onrender.com
 Backend  : https://queue-live-backend.onrender.com
-GitHub	 : https://github.com/vvarmaaddanki/queue-live
 
 ### 🎯 Key Objectives
 
