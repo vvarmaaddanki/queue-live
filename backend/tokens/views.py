@@ -47,6 +47,7 @@ def health_check_view(request):
 # Customer: Generate a queue token
 # -----------------------------------
 
+
 @csrf_exempt
 @require_POST
 def create_token_view(request):
@@ -67,12 +68,13 @@ def create_token_view(request):
             status=400,
         )
 
+    # Validate the UUID queue ID
     try:
-        queue_id = int(queue_id)
+        import uuid
 
-        if queue_id <= 0:
-            raise ValueError
-    except (TypeError, ValueError):
+        queue_uuid = uuid.UUID(str(queue_id))
+        queue = Queue.objects.get(id=queue_uuid)
+    except (ValueError, TypeError, Queue.DoesNotExist):
         return JsonResponse(
             {"error": "A valid queue_id is required"},
             status=400,
@@ -80,7 +82,7 @@ def create_token_view(request):
 
     try:
         token = create_token(
-            queue_id=queue_id,
+            queue_id=queue.id,
             name=name.strip(),
         )
     except Exception:
@@ -94,13 +96,14 @@ def create_token_view(request):
             "message": "Token created successfully",
             "token_id": token.id,
             "name": token.name,
-            "queue_id": token.queue_id,
+            "queue_id": str(token.queue_id),
             "service_date": str(token.service_date),
             "number": token.number,
             "status": token.status,
         },
         status=201,
     )
+
 
 
 # -----------------------------------
