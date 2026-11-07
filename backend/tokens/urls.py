@@ -1,3 +1,4 @@
+
 from django.urls import path
 from . import views
 
@@ -9,13 +10,13 @@ urlpatterns = [
     ),
 
     path(
-        "queues/<int:queue_id>/call-next/",
+        "queues/<uuid:queue_id>/call-next/",
         views.call_next_view,
         name="call_next",
     ),
 
     path(
-        "queues/<int:queue_id>/",
+        "queues/<uuid:queue_id>/",
         views.queue_tokens_view,
         name="queue_tokens",
     ),
