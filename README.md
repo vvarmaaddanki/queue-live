@@ -267,9 +267,10 @@ The production frontend and backend are hosted on Render. Configure the environm
 
 The remaining Phase 1 priorities are:
 - Complete a data-safe migration and staging upgrade rehearsal.
-- Verify QR join, customer status, cancellation and staff actions end to end on the deployed staging stack.
+- Verify QR join, customer status, cancellation, CSV export and staff actions end to end on the staging stack.
 - Finish production configuration and rollback checks.
-- Add the staff-facing TV queue display, then move to Phase 2 only after Phase 1 is verified.
+
+The TV display, language switching, running-late option, one-active-token-per-phone rule, SMS/WhatsApp alerts and multiple staff accounts remain Phase 2 work. Do not start them until Phase 1 is verified.
 
 SMS/WhatsApp notifications, online payments, AI chatbots and native mobile apps are not part of the current scope.
 
