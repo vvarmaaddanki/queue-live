@@ -23,6 +23,8 @@ export default function TokenStatus() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [liveConnected, setLiveConnected] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState("");
 
   useEffect(() => {
     if (!tokenId) {
@@ -141,6 +143,27 @@ export default function TokenStatus() {
       }
     };
   }, [tokenId]);
+
+  const cancelToken = async () => {
+    if (!tokenId || !window.confirm("Cancel your waiting token?")) return;
+    setCancelling(true);
+    setCancelError("");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tokens/public/${tokenId}/cancel/`, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to cancel token.");
+      }
+      setToken((current) => current ? { ...current, status: data.status } : current);
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : "Unable to cancel token.");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -263,6 +286,18 @@ export default function TokenStatus() {
             <p>This queue token is no longer active.</p>
           </div>
         )}
+
+        {status === "waiting" && (
+          <button
+            type="button"
+            className="home-link cancel-token-button"
+            onClick={cancelToken}
+            disabled={cancelling}
+          >
+            {cancelling ? "Cancelling..." : "Cancel Token"}
+          </button>
+        )}
+        {cancelError && <p className="error-message">{cancelError}</p>}
 
         <div className="live-update-note">
           <span className="live-note-dot" />
