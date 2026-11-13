@@ -35,12 +35,6 @@ class Token(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        indexes = [
-            models.Index(
-                fields=["queue", "service_date", "status"],
-                name="tokens_toke_queue_i_53e2a9_idx",
-            )
-        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["queue", "service_date", "number"],
