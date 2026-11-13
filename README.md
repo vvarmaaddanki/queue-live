@@ -79,6 +79,7 @@ queue-live/
 │   │   └── pages/
 │   ├── package.json
 │   └── package-lock.json
+├── DEPLOYMENT_SAFETY.md  # Migration and production upgrade safety checklist
 └── .github/
     └── workflows/
         └── ci.yml
@@ -250,6 +251,8 @@ npm run build
 GitHub Actions is configured to run backend migration checks, backend tests and the frontend build for pull requests and branch pushes. Check the Actions tab for the latest run result; do not treat a commit as verified until the workflow passes.
 
 ## Deployment notes
+
+Read [DEPLOYMENT_SAFETY.md](DEPLOYMENT_SAFETY.md) before any database upgrade or production release.
 
 The production frontend and backend are hosted on Render. Configure the environment variables above in the Render services, use PostgreSQL and Redis for deployed data and real-time messaging, and set the frontend origin in `CORS_ALLOWED_ORIGINS`. Set `FRONTEND_URL` to the public frontend origin so QR codes contain the correct customer join link. Configure the Render static site to rewrite unknown paths to `/index.html`; otherwise opening or refreshing `/token/{public_uuid}` or `/join/{queue_public_uuid}` may return a 404.
 
