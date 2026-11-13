@@ -59,12 +59,21 @@ def create_token_view(request):
             status=400,
         )
 
+    if not isinstance(data, dict):
+        return JsonResponse({"error": "Invalid request body"}, status=400)
+
     name = data.get("name")
     queue_id = data.get("queue_id")
 
     if not isinstance(name, str) or not name.strip():
         return JsonResponse(
             {"error": "Name is required"},
+            status=400,
+        )
+
+    if len(name.strip()) > 100:
+        return JsonResponse(
+            {"error": "Name must be 100 characters or fewer"},
             status=400,
         )
 
@@ -78,6 +87,12 @@ def create_token_view(request):
         return JsonResponse(
             {"error": "A valid queue_id is required"},
             status=400,
+        )
+
+    if not queue.is_open:
+        return JsonResponse(
+            {"error": "This queue is currently closed"},
+            status=409,
         )
 
     try:
@@ -217,7 +232,8 @@ def token_status_view(request, token_id):
 # Staff dashboard: Get queue tokens
 # -----------------------------------
 
-@require_GET
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
 def queue_tokens_view(request, queue_id):
     queue = get_object_or_404(
         Queue,
