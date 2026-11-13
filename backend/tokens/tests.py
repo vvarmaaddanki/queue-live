@@ -219,6 +219,22 @@ class QueueCsvExportTests(TestCase):
         )
         self.assertIn(response.status_code, (401, 403))
 
+    def test_csv_export_neutralizes_spreadsheet_formulas(self):
+        create_token(
+            queue_id=self.queue.pk,
+            name='=HYPERLINK("https://example.com","Open")',
+            phone="9876543210",
+        )
+        self.client.force_authenticate(self.owner)
+        response = self.client.get(
+            f"/api/tokens/queues/{self.queue.id}/export/"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "'=HYPERLINK",
+            response.content.decode("utf-8-sig"),
+        )
+
 
 class StaffTokenActionTests(TestCase):
     def setUp(self):
