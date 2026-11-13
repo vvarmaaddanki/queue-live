@@ -71,3 +71,64 @@ class QueueManagementApiTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 403)
+
+
+class OwnerRegistrationAndQueueCreationTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_owner_registration_creates_business_and_owner_profile(self):
+        response = self.client.post("/api/auth/register/", {
+            "username": "new-owner",
+            "email": "owner@example.com",
+            "password": "StrongPassword!2026",
+            "place_name": "New Clinic",
+            "place_kind": "clinic",
+        }, format="json")
+        self.assertEqual(response.status_code, 201)
+        User = get_user_model()
+        owner = User.objects.get(username="new-owner")
+        self.assertTrue(owner.check_password("StrongPassword!2026"))
+        self.assertEqual(owner.staff_profile.role, StaffProfile.Role.OWNER)
+        self.assertEqual(owner.staff_profile.place.name, "New Clinic")
+
+    def test_owner_registration_rejects_duplicate_username(self):
+        User = get_user_model()
+        User.objects.create_user(username="existing-owner", password="StrongPassword!2026")
+        response = self.client.post("/api/auth/register/", {
+            "username": "existing-owner",
+            "email": "",
+            "password": "StrongPassword!2026",
+            "place_name": "Clinic",
+            "place_kind": "clinic",
+        }, format="json")
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(Place.objects.count(), 0)
+
+    def test_owner_can_create_queue_only_for_own_business(self):
+        User = get_user_model()
+        place = Place.objects.create(name="Owner Clinic", kind="clinic")
+        owner = User.objects.create_user(username="queue-owner", password="StrongPassword!2026")
+        StaffProfile.objects.create(user=owner, place=place, role=StaffProfile.Role.OWNER)
+        self.client.force_authenticate(owner)
+        response = self.client.post("/api/queues/create/", {
+            "name": "General Consultation",
+            "default_minutes": 8,
+        }, format="json")
+        self.assertEqual(response.status_code, 201)
+        queue = Queue.objects.get(place=place)
+        self.assertEqual(queue.name, "General Consultation")
+        self.assertEqual(queue.default_minutes, 8)
+
+    def test_staff_cannot_create_queue(self):
+        User = get_user_model()
+        place = Place.objects.create(name="Staff Clinic", kind="clinic")
+        staff = User.objects.create_user(username="queue-staff", password="StrongPassword!2026")
+        StaffProfile.objects.create(user=staff, place=place, role=StaffProfile.Role.STAFF)
+        self.client.force_authenticate(staff)
+        response = self.client.post("/api/queues/create/", {
+            "name": "Not Allowed",
+            "default_minutes": 10,
+        }, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Queue.objects.filter(place=place).count(), 0)
