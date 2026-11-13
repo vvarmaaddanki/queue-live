@@ -12,11 +12,17 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework.decorators import throttle_classes
 
 from places.models import Queue
 from .models import Token
 from .services import create_token, call_next
+
+
+class PublicTokenCreationThrottle(AnonRateThrottle):
+    scope = "token_creation"
 
 
 def user_can_manage_queue(user, queue):
@@ -45,13 +51,11 @@ def health_check_view(request):
     return JsonResponse({"status": "ok"})
 
 
-@csrf_exempt
-@require_POST
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@throttle_classes([PublicTokenCreationThrottle])
 def create_token_view(request):
-    try:
-        data = json.loads(request.body)
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    data = request.data
 
     if not isinstance(data, dict):
         return JsonResponse({"error": "Invalid request body"}, status=400)
