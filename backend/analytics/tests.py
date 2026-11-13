@@ -132,3 +132,22 @@ class OwnerRegistrationAndQueueCreationTests(TestCase):
         }, format="json")
         self.assertEqual(response.status_code, 403)
         self.assertEqual(Queue.objects.filter(place=place).count(), 0)
+
+
+class PublicQueueQrTests(TestCase):
+    def setUp(self):
+        self.place = Place.objects.create(name="QR Clinic", kind="clinic")
+        self.queue = Queue.objects.create(place=self.place, name="QR Queue")
+
+    def test_open_queue_qr_returns_self_hosted_svg(self):
+        response = self.client.get(f"/api/queues/public/{self.queue.public_id}/qr/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/svg+xml")
+        self.assertIn(b"<svg", response.content)
+        self.assertEqual(response["X-Content-Type-Options"], "nosniff")
+
+    def test_closed_queue_does_not_publish_join_qr(self):
+        self.queue.is_open = False
+        self.queue.save(update_fields=["is_open"])
+        response = self.client.get(f"/api/queues/public/{self.queue.public_id}/qr/")
+        self.assertEqual(response.status_code, 404)
