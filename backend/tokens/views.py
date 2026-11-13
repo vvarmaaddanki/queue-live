@@ -3,7 +3,7 @@ import uuid
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist\nfrom django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
