@@ -40,4 +40,13 @@ class Migration(migrations.Migration):
             name="customer_name",
         ),
 
+        migrations.RemoveField(
+            model_name="token",
+            name="phone",
+        ),
+
+        migrations.RemoveField(
+            model_name="token",
+            name="public_id",
+        ),
     ]
