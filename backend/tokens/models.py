@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from places.models import Queue
 
@@ -10,7 +12,9 @@ class Token(models.Model):
         SKIPPED = "skipped", "Skipped"
         CANCELLED = "cancelled", "Cancelled"
 
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15, blank=True)
 
     queue = models.ForeignKey(
         Queue,
