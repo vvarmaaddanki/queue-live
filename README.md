@@ -1,296 +1,259 @@
-# 🚀 Live Queue App – Real-Time Queue Management System
+# Queue Live — Real-Time Queue Management
 
-A full-stack real-time queue management application designed to help clinics, salons, tuition centres, and small businesses manage customer waiting lines efficiently.
+Queue Live is a full-stack queue management application for clinics, salons, tuition centres and other service businesses. Customers can join an open queue, receive a token number and follow their place in line. Staff can manage queues from a protected dashboard.
 
-The application allows customers to join a queue and track their token status, while staff can manage queues and monitor customer flow through a centralized dashboard.
+## Live application
 
-## 🌟 Project Overview
-
-Traditional queue management systems often rely on paper tokens and manual coordination, leading to long waiting times, overcrowding, and poor customer experiences.
-
-**Live Queue App** aims to solve these problems through a digital queue management system that simplifies customer registration, token management, and queue monitoring.
-Live Demo     	URL
-Frontend : https://queue-live-frontend.onrender.com
-Backend  : https://queue-live-backend.onrender.com
-
-### 🎯 Key Objectives
-
-- Reduce physical waiting and overcrowding.
-- Simplify queue management for business owners and staff.
-- Provide customers with token-based queue tracking.
-- Build a scalable full-stack application.
-- Demonstrate practical backend and frontend integration.
-
-## ✨ Features
-
-### Backend
-- REST API development using Django REST Framework.
-- Queue management and database operations.
-- Queue model with business name, queue name, availability status, and default waiting time.
-- Token management and database migrations.
-- Structured backend applications for users, places, tokens, and analytics.
-
-### Frontend
-- React-based user interface.
-- TypeScript for structured frontend development.
-- Vite development environment.
-- API integration with the Django backend.
-- Queue dashboard displaying queue information.
-
-### Core Application Capabilities
-- View available queues.
-- Display queue information.
-- Manage queue-related data.
-- Connect frontend components with backend APIs.
-
-> Note: Add additional capabilities such as live WebSocket updates, JWT authentication, customer joining, and analytics here only after verifying that they are implemented and tested in the deployed version.
-
-## 🛠️ Technology Stack
-
-| Category | Technologies |
+| Service | URL |
 |---|---|
-| Backend | Python, Django |
-| API | Django REST Framework |
-| Frontend | React.js, TypeScript |
-| Build Tool | Vite |
-| Database | PostgreSQL |
-| Development Tools | Git, GitHub, Postman |
-| API Testing | Postman |
-| Deployment | Render |
+| Customer and staff frontend | https://queue-live-frontend.onrender.com |
+| Backend API | https://queue-live-backend.onrender.com |
+| GitHub repository | https://github.com/vvarmaaddanki/queue-live |
 
-## 🏗️ Project Architecture
+> The live links point to the currently deployed version. Changes on the development branch are not live until they are reviewed, merged and deployed.
 
-The application follows a client-server architecture.
+## Current features
 
-```text
-             USER
-               |
-               v
-       REACT FRONTEND
-       (TypeScript + Vite)
-               |
-               |
-          REST API
-               |
-               v
-       DJANGO BACKEND
-               |
-               v
-       DJANGO REST
-        FRAMEWORK
-               |
-               v
-          DATABASE
-         PostgreSQL
-```
+### Customer
+- View queues that are currently open.
+- Join a queue with a name and optional mobile number.
+- Receive a token number and a private public-UUID tracking link/identifier.
+- View waiting position and estimated waiting time.
+- Track token status with WebSocket updates and automatic polling as a fallback.
+- Cancel a token while it is still waiting.
 
-### Application Workflow
+### Staff
+- Sign in with a Django account using JWT authentication.
+- View queues belonging to their own business.
+- Open or close a queue.
+- View the day's tokens and their status.
+- Call the next waiting customer.
+- Complete or skip a token.
 
-1. The user opens the React frontend.
-2. The frontend communicates with the Django backend through REST APIs.
-3. Django processes incoming requests.
-4. The backend interacts with the database.
-5. The requested data is returned through the API.
-6. React displays the updated information.
+### Access and data handling
+- Staff queue actions check that the signed-in user belongs to the queue's business.
+- Public queue discovery lists open queues; authenticated staff can view their own business's queues, including closed queues.
+- Customer status and cancellation routes use a UUID rather than exposing the sequential database ID.
+- Queue and token data are stored through Django models and migrations.
 
-## 📂 Project Structure
+## Technology
+
+| Area | Technology |
+|---|---|
+| Backend | Python, Django 6.1 |
+| API and authentication | Django REST Framework, Simple JWT |
+| Real-time updates | Django Channels, WebSockets, Redis |
+| Frontend | React, TypeScript, Vite |
+| Database | PostgreSQL in deployment; SQLite fallback for local development |
+| Hosting | Render |
+| CI | GitHub Actions |
+
+## How it works
+
+1. A customer opens the frontend and selects an open queue.
+2. The frontend sends the customer's details to the Django API.
+3. The backend creates a dated token for that queue.
+4. The customer follows the token status using its public UUID.
+5. Staff sign in and manage only queues linked to their business.
+6. Queue events are sent through Django Channels; the customer page also polls periodically if a WebSocket connection is unavailable.
+
+## Repository layout
 
 ```text
 queue-live/
-│
 ├── backend/
-│   ├── config/
-│   ├── users/
-│   ├── places/
-│   │   ├── models.py
-│   │   ├── admin.py
-│   │   └── ...
-│   │
-│   ├── tokens/
-│   ├── analytics/
+│   ├── config/       # Django settings, URL configuration and ASGI
+│   ├── analytics/    # Health check, queue listing and queue status API
+│   ├── places/       # Businesses, staff profiles and queues
+│   ├── tokens/       # Token models, APIs, services and WebSocket consumer
+│   ├── users/        # User app
 │   ├── manage.py
 │   └── requirements.txt
-│
 ├── frontend/
 │   ├── src/
-│   │   ├── pages/
-│   │   │   ├── Join.tsx
-│   │   │   └── TokenStatus.tsx
-│   │   ├── components/
-│   │   └── ...
-│   │
+│   │   ├── api/
+│   │   └── pages/
 │   ├── package.json
-│   └── vite.config.ts
-│
-└── README.md
+│   └── package-lock.json
+└── .github/
+    └── workflows/
+        └── ci.yml
 ```
 
-*This is a simplified structure. Update it to match the actual folders and files in your repository.*
+## Run locally
 
-## ⚙️ Installation and Setup
+### Prerequisites
 
-Follow these steps to run the project locally.
+- Python version supported by the pinned Django release.
+- Node.js 22 or later and npm.
+- Redis for WebSocket messaging.
+- PostgreSQL is recommended for production-like local testing. The backend falls back to SQLite when `DATABASE_URL` is not set.
 
-### 1. Clone the Repository
-
-```bash
-https://github.com/vvarmaaddanki/queue-live.git
-```
-
-### 2. Navigate to the Project
+### 1. Clone the repository
 
 ```bash
+git clone https://github.com/vvarmaaddanki/queue-live.git
 cd queue-live
 ```
 
-### 3. Backend Setup
+### 2. Configure and start the backend
+
+Open a terminal:
 
 ```bash
 cd backend
+python -m venv .venv
 ```
 
-Create a virtual environment:
+Activate the environment on Windows:
 
-```bash
-python -m venv venv
+```powershell
+.venv\\Scripts\\Activate.ps1
 ```
 
-Activate it on Windows:
+Or in Git Bash:
 
 ```bash
-venv\Scripts\activate
+source .venv/Scripts/activate
 ```
 
 Install dependencies:
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-Run migrations:
+Set the required environment variables before starting Django. Example for Git Bash:
+
+```bash
+export DJANGO_SECRET_KEY="replace-with-a-long-random-secret"
+export DEBUG="True"
+export ALLOWED_HOSTS="localhost,127.0.0.1"
+export CORS_ALLOWED_ORIGINS="http://localhost:5173"
+export REDIS_URL="redis://127.0.0.1:6379/0"
+```
+
+If using PostgreSQL, also set `DATABASE_URL` to your database connection string. Do not commit real secrets or production database credentials.
+
+Apply migrations and start the backend:
 
 ```bash
 python manage.py migrate
-```
-
-Start the Django development server:
-
-```bash
 python manage.py runserver
 ```
 
-Backend URL:
+The backend will be available at `http://127.0.0.1:8000`.
 
-```text
-http://127.0.0.1:8000
-```
+### 3. Start the frontend
 
-### 4. Frontend Setup
-
-Open another terminal:
+Open a second terminal:
 
 ```bash
 cd frontend
+npm ci
 ```
 
-Install dependencies:
+Create `frontend/.env.local`:
 
-```bash
-npm install
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-Start the frontend:
+Start Vite:
 
 ```bash
 npm run dev
 ```
 
-Frontend URL:
+Open `http://localhost:5173`.
 
-```text
-https://localhost:5173/
+### 4. Create a staff login
+
+Staff authentication uses Django users and JWT. There is currently no public self-registration flow.
+
+Create an administrator account:
+
+```bash
+cd backend
+python manage.py createsuperuser
 ```
 
-## 🔗 API Integration
+Then open `http://127.0.0.1:8000/admin/` and create the business (Place), its staff profile and queue. Link the staff profile to the Django user and the correct business. Use the staff account to sign in to the frontend dashboard.
 
-The frontend communicates with the Django backend through REST APIs.
+## API reference
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/queues/` | Retrieve queue information |
+All paths below are relative to the backend origin.
 
-Additional endpoints should be documented here after they are implemented and verified.
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/health/` | Public | Backend health check |
+| GET | `/api/queues/` | Public / JWT | Public users see open queues; staff see their business queues |
+| POST | `/api/auth/login/` | Public | Obtain JWT access and refresh tokens |
+| POST | `/api/auth/refresh/` | Refresh token | Refresh an access token |
+| POST | `/api/tokens/generate/` | Public | Create a customer token |
+| GET | `/api/tokens/public/{public_uuid}/status/` | Public UUID | Read token status and waiting estimate |
+| POST | `/api/tokens/public/{public_uuid}/cancel/` | Public UUID | Cancel a waiting token |
+| GET | `/api/tokens/queues/{queue_uuid}/` | JWT + queue access | List today's tokens for a queue |
+| POST | `/api/tokens/queues/{queue_uuid}/call-next/` | JWT + queue access | Complete the current token and call the next waiting token |
+| POST | `/api/tokens/{token_id}/complete/` | JWT + queue access | Mark a serving token as completed |
+| POST | `/api/tokens/{token_id}/skip/` | JWT + queue access | Skip a waiting or serving token |
+| POST | `/api/queues/{queue_uuid}/status/` | JWT + queue access | Open or close a queue |
 
-## 🗄️ Database
+The token-generation request accepts JSON with `name`, `queue_id` and optional `phone`. Queue status changes accept JSON with a Boolean `is_open` value.
 
-The project uses PostgreSQL for structured data storage.
+## Configuration reference
 
-The Queue model includes:
+| Variable | Purpose |
+|---|---|
+| `DJANGO_SECRET_KEY` | Required Django secret key |
+| `DEBUG` | Set to `False` in production |
+| `ALLOWED_HOSTS` | Comma-separated backend hostnames |
+| `DATABASE_URL` | Optional database URL; SQLite is used when omitted |
+| `REDIS_URL` | Redis connection used by Django Channels |
+| `CORS_ALLOWED_ORIGINS` | Comma-separated frontend origins |
+| `VITE_API_BASE_URL` | Frontend backend origin, without the `/api` suffix |
 
-- `place` – Associated business or location.
-- `name` – Queue name.
-- `is_open` – Queue availability.
-- `default_minutes` – Default estimated waiting time.
+## Tests and build
 
-Django models and migrations manage database structure and changes.
+Backend tests:
 
-## 🧪 Testing
+```bash
+cd backend
+python manage.py test
+python manage.py makemigrations --check --dry-run
+```
 
-API endpoints can be tested using Postman.
+Frontend production build:
 
-Testing should cover:
+```bash
+cd frontend
+npm ci
+npm run build
+```
 
-- API response status codes.
-- Database operations.
-- Queue creation and retrieval.
-- Frontend and backend communication.
-- Error handling and validation.
+GitHub Actions is configured to run backend migration checks, backend tests and the frontend build for pull requests and branch pushes. Check the Actions tab for the latest run result; do not treat a commit as verified until the workflow passes.
 
-## 🚀 Deployment
+## Deployment notes
 
-The application has been successfully deployed.
+The production frontend and backend are hosted on Render. Configure the environment variables above in the Render services, use PostgreSQL and Redis for deployed data and real-time messaging, and set the frontend origin in `CORS_ALLOWED_ORIGINS`.
 
-- Live Application: [ADD YOUR LIVE FRONTEND URL]
-- Backend API: [ADD YOUR BACKEND URL]
-- GitHub Repository: [ADD YOUR REPOSITORY URL]
+**Do not run database migrations against production until the migration chain has been tested against a backup or staging database.** A development-branch commit does not update the live application by itself.
 
-## 🔮 Future Enhancements
+## Planned work
 
-The planned improvements, following the project roadmap, include:
+The next development priorities are:
+- Finish migration and deployment checks without risking existing production data.
+- Improve token generation under simultaneous customer requests.
+- Add a public QR-based queue joining flow.
+- Add staff-facing queue display and daily CSV export.
+- Add remaining Phase 2 features after the core queue flow is stable.
 
-- Real-time queue updates using Django Channels and WebSockets.
-- Redis integration for real-time messaging.
-- JWT-based authentication.
-- Customer token generation and tracking.
-- Queue cancellation and management.
-- QR code-based queue joining.
-- Queue analytics and reporting.
-- Docker-based deployment.
-- Automated testing and GitHub Actions.
+SMS/WhatsApp notifications, online payments, AI chatbots and native mobile apps are not part of the current scope.
 
-## 🎓 What I Learned
+## Developer
 
-Through this project, I gained practical experience in:
-
-- Developing backend applications using Python and Django.
-- Designing REST APIs using Django REST Framework.
-- Building frontend applications using React and TypeScript.
-- Connecting frontend applications with backend services.
-- Working with relational databases.
-- Managing code using Git and GitHub.
-- Deploying a full-stack application.
-
-## 👨‍💻 Developer
-
-**A V Varma**
-
-Python Full Stack Developer | Django | React | TypeScript | PostgreSQL
+**A V Varma**  
+Python Full Stack Developer · Django · React · TypeScript
 
 - GitHub: https://github.com/vvarmaaddanki
 - LinkedIn: https://www.linkedin.com/in/vvarmaaddanki/
-
----
-
-⭐ If you find this project interesting, consider giving the repository a star!
-
-**Built with Python, Django, React, and TypeScript.**
