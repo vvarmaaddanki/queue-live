@@ -253,16 +253,15 @@ GitHub Actions is configured to run backend migration checks, backend tests and 
 
 The production frontend and backend are hosted on Render. Configure the environment variables above in the Render services, use PostgreSQL and Redis for deployed data and real-time messaging, and set the frontend origin in `CORS_ALLOWED_ORIGINS`. Set `FRONTEND_URL` to the public frontend origin so QR codes contain the correct customer join link. Configure the Render static site to rewrite unknown paths to `/index.html`; otherwise opening or refreshing `/token/{public_uuid}` or `/join/{queue_public_uuid}` may return a 404.
 
-**Do not run database migrations against production until the migration chain has been tested against a backup or staging database.** A development-branch commit does not update the live application by itself.
+**Production migration warning:** Do not run the current migration chain against the live database until the migration history and data have been checked against a fresh backup. The existing migration history removes legacy customer and queue fields; see [Deployment Safety](DEPLOYMENT_SAFETY.md). A passing CI run proves that a fresh test database can migrate, not that an existing production database will retain its data. A development-branch commit does not update the live application by itself.
 
 ## Planned work
 
-The next development priorities are:
-- Finish migration and deployment checks without risking existing production data.
-- Improve token generation under simultaneous customer requests.
-- Add a public QR-based queue joining flow.
-- Add staff-facing queue display and QR-based joining flow.
-- Add remaining Phase 2 features after the core queue flow is stable.
+The remaining Phase 1 priorities are:
+- Complete a data-safe migration and staging upgrade rehearsal.
+- Verify QR join, customer status, cancellation and staff actions end to end on the deployed staging stack.
+- Finish production configuration and rollback checks.
+- Add the staff-facing TV queue display, then move to Phase 2 only after Phase 1 is verified.
 
 SMS/WhatsApp notifications, online payments, AI chatbots and native mobile apps are not part of the current scope.
 
