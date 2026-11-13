@@ -4,9 +4,15 @@ from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework.decorators import throttle_classes
 
 from places.models import Place, Queue, StaffProfile
 from tokens.views import broadcast_queue_update, user_can_manage_queue
+
+
+class OwnerRegistrationThrottle(AnonRateThrottle):
+    scope = "owner_registration"
 
 
 def health_check(request):
@@ -82,6 +88,7 @@ def set_queue_status(request, queue_id):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@throttle_classes([OwnerRegistrationThrottle])
 def owner_register(request):
     """Create a business, its first owner account, and staff profile atomically."""
     username = request.data.get("username")
