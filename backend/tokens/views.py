@@ -83,8 +83,7 @@ def create_token_view(request):
 
     return JsonResponse({
         "message": "Token created successfully",
-        "token_id": token.id,
-        "public_id": str(token.public_id),
+"public_id": str(token.public_id),
         "name": token.name,
         "queue_id": str(token.queue_id),
         "service_date": str(token.service_date),
@@ -122,8 +121,8 @@ def call_next_view(request, queue_id):
 
 
 @require_GET
-def token_status_view(request, token_id):
-    token = get_object_or_404(Token, id=token_id)
+def token_status_view(request, public_id):
+    token = get_object_or_404(Token, public_id=public_id)
     customers_ahead = 0
     if token.status == Token.Status.WAITING:
         customers_ahead = Token.objects.filter(
