@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.test import TestCase, Client
 from rest_framework.test import APIClient
 from unittest.mock import patch
@@ -79,6 +81,14 @@ class TokenModelTest(TestCase):
             phone="9876543210",
         )
         self.assertEqual(token.phone, "9876543210")
+
+    @patch("tokens.services.timezone.localdate", side_effect=[date(2026, 11, 1), date(2026, 11, 2)])
+    def test_token_number_resets_on_a_new_service_day(self, mocked_localdate):
+        first_day_token = create_token(queue_id=self.queue.pk, name="Day one")
+        next_day_token = create_token(queue_id=self.queue.pk, name="Day two")
+        self.assertEqual(first_day_token.number, 1)
+        self.assertEqual(next_day_token.number, 1)
+        self.assertNotEqual(first_day_token.service_date, next_day_token.service_date)
 
     def test_closed_queue_rejects_token_creation(self):
         self.queue.is_open = False
