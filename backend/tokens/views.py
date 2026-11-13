@@ -111,7 +111,8 @@ def call_next_view(request, queue_id):
 
     return JsonResponse({
         "message": "Next customer called",
-"name": token.name,
+        "token_id": token.id,
+        "name": token.name,
         "queue_id": str(token.queue_id),
         "number": token.number,
         "status": token.status,
