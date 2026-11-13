@@ -1,4 +1,5 @@
 from django.test import TestCase, Client
+from rest_framework.test import APIClient
 from unittest.mock import patch
 from django.contrib.auth import get_user_model
 
@@ -154,3 +155,42 @@ class CustomerTokenCancellationTest(TestCase):
         self.token.refresh_from_db()
         self.assertEqual(self.token.status, Token.Status.SERVING)
         broadcast.assert_not_called()
+
+
+class QueueCsvExportTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.place = Place.objects.create(name="Export Clinic", kind="clinic")
+        self.queue = Queue.objects.create(place=self.place, name="General")
+        self.owner = User.objects.create_user(
+            username="export-owner",
+            password="test-password",
+        )
+        StaffProfile.objects.create(
+            user=self.owner,
+            place=self.place,
+            role=StaffProfile.Role.OWNER,
+        )
+        self.client = APIClient()
+
+    def test_owner_can_export_today_queue_as_csv(self):
+        token = create_token(
+            queue_id=self.queue.pk,
+            name="CSV Customer",
+            phone="9876543210",
+        )
+        self.client.force_authenticate(self.owner)
+        response = self.client.get(
+            f"/api/tokens/queues/{self.queue.id}/export/"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv; charset=utf-8")
+        self.assertIn("attachment;", response["Content-Disposition"])
+        self.assertIn("CSV Customer", response.content.decode("utf-8-sig"))
+        self.assertIn("9876543210", response.content.decode("utf-8-sig"))
+
+    def test_anonymous_user_cannot_export_queue_csv(self):
+        response = self.client.get(
+            f"/api/tokens/queues/{self.queue.id}/export/"
+        )
+        self.assertIn(response.status_code, (401, 403))
