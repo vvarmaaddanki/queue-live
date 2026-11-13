@@ -5,14 +5,16 @@ import "./TokenStatus.css";
 type TokenStatusData = {
   token_id: number;
   name: string;
-  queue_id: number;
+  queue_id: string;
   token_number: number;
   status: string;
   customers_ahead: number;
   estimated_wait_minutes: number;
 };
 
-const API_BASE_URL = "https://queue-live-backend.onrender.com"
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "https://queue-live-backend.onrender.com"
+).replace(/\/$/, "");
 
 export default function TokenStatus() {
   const { tokenId } = useParams<{ tokenId: string }>();
@@ -66,11 +68,12 @@ export default function TokenStatus() {
       }
     };
 
-    const connectWebSocket = (queueId: number) => {
+    const connectWebSocket = (queueId: string) => {
       if (!isActive) return;
 
+      const websocketBaseUrl = API_BASE_URL.replace(/^http/, "ws");
       socket = new WebSocket(
-        `ws://queue-live-backend.onrender.com/ws/queues/${queueId}/`
+        `${websocketBaseUrl}/ws/queues/${encodeURIComponent(queueId)}/`
       );
 
       socket.onopen = () => {
