@@ -12,9 +12,15 @@ def create_token(queue_id, name, phone=""):
     for attempt in range(5):
         try:
             with transaction.atomic():
+                # Lock the queue row so simultaneous requests for the same
+                # queue cannot calculate and claim the same next number.
+                queue = Queue.objects.select_for_update().get(id=queue_id)
+                if not queue.is_open:
+                    raise ValueError("This queue is currently closed")
+
                 last_number = (
                     Token.objects.filter(
-                        queue_id=queue_id,
+                        queue=queue,
                         service_date=service_date,
                     ).aggregate(max_number=Max("number"))["max_number"]
                     or 0
@@ -22,7 +28,7 @@ def create_token(queue_id, name, phone=""):
                 token = Token.objects.create(
                     name=name,
                     phone=phone,
-                    queue_id=queue_id,
+                    queue=queue,
                     service_date=service_date,
                     number=last_number + 1,
                 )
