@@ -24,7 +24,7 @@ Queue Live is a full-stack queue management application for clinics, salons, tui
 
 ### Business owners and staff
 - Register a business and its first owner account from the staff dashboard.
-- Create queues for the owner’s business and set the default service time.
+- Create queues for the owner’s business and set the default service time.\n- Display a self-hosted QR code for each open queue so customers can scan and join.
 - Sign in using JWT authentication.
 - Staff can view and manage queues belonging only to their own business.
 - View queues belonging to their own business.
@@ -186,7 +186,7 @@ All paths below are relative to the backend origin.
 | Method | Endpoint | Access | Purpose |
 |---|---|---|---|
 | GET | `/api/health/` | Public | Backend health check |
-| GET | `/api/queues/` | Public / JWT | Public users see open queues; staff see their business queues |
+| GET | `/api/queues/` | Public / JWT | Public users see open queues; staff see their business queues |\n| GET | `/api/queues/public/{queue_public_uuid}/qr/` | Public | Return an SVG QR code linking to the open queue join page |
 | POST | `/api/auth/register/` | Public | Create a business and its first owner account |\n| POST | `/api/auth/login/` | Public | Obtain JWT access and refresh tokens |
 | POST | `/api/auth/refresh/` | Refresh token | Refresh an access token |
 | POST | `/api/tokens/generate/` | Public | Create a customer token |
@@ -211,7 +211,7 @@ The owner-registration request accepts `username`, `password`, `place_name`, `pl
 | `DATABASE_URL` | Optional database URL; SQLite is used when omitted |
 | `REDIS_URL` | Redis connection used by Django Channels |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated frontend origins |
-| `VITE_API_BASE_URL` | Frontend backend origin, without the `/api` suffix |
+| `VITE_API_BASE_URL` | Frontend backend origin, without the `/api` suffix |\n| `VITE_APP_URL` | Optional public frontend origin used to display QR destination links |\n| `FRONTEND_URL` | Backend setting used to encode the frontend origin into queue QR codes |
 
 ## Tests and build
 
@@ -235,7 +235,7 @@ GitHub Actions is configured to run backend migration checks, backend tests and 
 
 ## Deployment notes
 
-The production frontend and backend are hosted on Render. Configure the environment variables above in the Render services, use PostgreSQL and Redis for deployed data and real-time messaging, and set the frontend origin in `CORS_ALLOWED_ORIGINS`. Because customer tracking uses URLs such as `/token/{public_uuid}`, configure the Render static site to rewrite unknown paths to `/index.html`; otherwise opening or refreshing a shared token URL may return a 404.
+The production frontend and backend are hosted on Render. Configure the environment variables above in the Render services, use PostgreSQL and Redis for deployed data and real-time messaging, and set the frontend origin in `CORS_ALLOWED_ORIGINS`. Set `FRONTEND_URL` to the public frontend origin so QR codes contain the correct customer join link. Configure the Render static site to rewrite unknown paths to `/index.html`; otherwise opening or refreshing `/token/{public_uuid}` or `/join/{queue_public_uuid}` may return a 404.
 
 **Do not run database migrations against production until the migration chain has been tested against a backup or staging database.** A development-branch commit does not update the live application by itself.
 
