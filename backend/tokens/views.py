@@ -110,7 +110,7 @@ def export_queue_tokens_view(request, queue_id):
     response["Content-Disposition"] = (
         f'attachment; filename="queue-{queue.id}-{timezone.localdate()}.csv"'
     )
-    response.write("\\ufeff")
+    response.write("\ufeff")
     writer = csv.writer(response)
     writer.writerow([
         "Token Number",
