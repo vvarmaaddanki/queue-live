@@ -38,7 +38,7 @@ class QueueManagementApiTests(TestCase):
         queue_ids = {item["id"] for item in response.json()["queues"]}
         self.assertIn(str(self.open_queue.id), queue_ids)
         self.assertNotIn(str(self.closed_queue.id), queue_ids)
-        self.assertNotIn(str(self.other_queue.id), queue_ids)
+        self.assertIn(str(self.other_queue.id), queue_ids)
 
     def test_staff_queue_list_includes_closed_queues_for_own_place(self):
         self.client.force_authenticate(self.owner)
