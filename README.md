@@ -201,8 +201,10 @@ All paths below are relative to the backend origin.
 | Method | Endpoint | Access | Purpose |
 |---|---|---|---|
 | GET | `/api/health/` | Public | Backend health check |
-| GET | `/api/queues/` | Public / JWT | Public users see open queues; staff see their business queues |\n| GET | `/api/queues/public/{queue_public_uuid}/qr/` | Public | Return an SVG QR code linking to the open queue join page |
-| POST | `/api/auth/register/` | Public | Create a business and its first owner account |\n| POST | `/api/auth/login/` | Public | Obtain JWT access and refresh tokens |
+| GET | `/api/queues/` | Public / JWT | Public users see open queues; staff see their business queues |
+| GET | `/api/queues/public/{queue_public_uuid}/qr/` | Public | Return an SVG QR code linking to the open queue join page |
+| POST | `/api/auth/register/` | Public | Create a business and its first owner account |
+| POST | `/api/auth/login/` | Public | Obtain JWT access and refresh tokens |
 | POST | `/api/auth/refresh/` | Refresh token | Refresh an access token |
 | POST | `/api/tokens/generate/` | Public | Create a customer token |
 | GET | `/api/tokens/public/{public_uuid}/status/` | Public UUID | Read token status and waiting estimate |
@@ -212,7 +214,8 @@ All paths below are relative to the backend origin.
 | POST | `/api/tokens/queues/{queue_uuid}/call-next/` | JWT + queue access | Complete the current token and call the next waiting token |
 | POST | `/api/tokens/{token_id}/complete/` | JWT + queue access | Mark a serving token as completed |
 | POST | `/api/tokens/{token_id}/skip/` | JWT + queue access | Skip a waiting or serving token |
-| POST | `/api/queues/create/` | Owner JWT | Create a queue for the owner’s business |\n| POST | `/api/queues/{queue_uuid}/status/` | JWT + queue access | Open or close a queue |
+| POST | `/api/queues/create/` | Owner JWT | Create a queue for the owner’s business |
+| POST | `/api/queues/{queue_uuid}/status/` | JWT + queue access | Open or close a queue |
 
 The owner-registration request accepts `username`, `password`, `place_name`, `place_kind` and optional `email`. Queue creation accepts `name` and optional `default_minutes` (1–120). Token generation accepts `name`, `queue_id` and optional `phone`. Queue status changes accept JSON with a Boolean `is_open` value.
 
@@ -226,7 +229,9 @@ The owner-registration request accepts `username`, `password`, `place_name`, `pl
 | `DATABASE_URL` | Optional database URL; SQLite is used when omitted |
 | `REDIS_URL` | Redis connection used by Django Channels |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated frontend origins |
-| `VITE_API_BASE_URL` | Frontend backend origin, without the `/api` suffix |\n| `VITE_APP_URL` | Optional public frontend origin used to display QR destination links |\n| `FRONTEND_URL` | Backend setting used to encode the frontend origin into queue QR codes |
+| `VITE_API_BASE_URL` | Frontend backend origin, without the `/api` suffix |
+| `VITE_APP_URL` | Optional public frontend origin used to display QR destination links |
+| `FRONTEND_URL` | Backend setting used to encode the frontend origin into queue QR codes |
 
 ## Tests and build
 
