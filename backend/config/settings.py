@@ -171,6 +171,9 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+    "DEFAULT_THROTTLE_RATES": {
+        "owner_registration": "5/hour",
+    },
 }
 CSRF_TRUSTED_ORIGINS = [
     "https://queue-live-backend.onrender.com",
