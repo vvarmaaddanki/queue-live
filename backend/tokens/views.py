@@ -27,10 +27,12 @@ class PublicTokenCreationThrottle(AnonRateThrottle):
 
 def safe_csv_cell(value):
     """Prevent spreadsheet formula execution when CSV values are opened."""
-    if isinstance(value, str) and value.startswith(("=", "+", "-", "@", "\\t", "\\r")):
+    if isinstance(value, str) and (
+        value.startswith(("=", "+", "-", "@"))
+        or (value and ord(value[0]) in (9, 13))
+    ):
         return "'" + value
     return value
-
 
 def user_can_manage_queue(user, queue):
     if not user or not user.is_authenticated:
