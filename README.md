@@ -22,8 +22,11 @@ Queue Live is a full-stack queue management application for clinics, salons, tui
 - Track token status with WebSocket updates and automatic polling as a fallback.
 - Cancel a token while it is still waiting.
 
-### Staff
-- Sign in with a Django account using JWT authentication.
+### Business owners and staff
+- Register a business and its first owner account from the staff dashboard.
+- Create queues for the owner’s business and set the default service time.
+- Sign in using JWT authentication.
+- Staff can view and manage queues belonging only to their own business.
 - View queues belonging to their own business.
 - Open or close a queue.
 - Export the current day's queue tokens as a CSV file.
@@ -168,18 +171,13 @@ npm run dev
 
 Open `http://localhost:5173`.
 
-### 4. Create a staff login
+### 4. Register a business and create its first queue
 
-Staff authentication uses Django users and JWT. There is currently no public self-registration flow.
-
-Create an administrator account:
-
-```bash
-cd backend
-python manage.py createsuperuser
-```
-
-Then open `http://127.0.0.1:8000/admin/` and create the business (Place), its staff profile and queue. Link the staff profile to the Django user and the correct business. Use the staff account to sign in to the frontend dashboard.
+- Open the frontend and select **Staff Dashboard**.
+- Choose **Register a Business** and enter an owner username, password and business details.
+- Return to login and sign in with the new owner account.
+- Use **Create a queue** in the dashboard to add the first queue and set its default service time.
+- Additional staff accounts can be created by an administrator and linked to the correct business through Django admin.
 
 ## API reference
 
@@ -189,7 +187,7 @@ All paths below are relative to the backend origin.
 |---|---|---|---|
 | GET | `/api/health/` | Public | Backend health check |
 | GET | `/api/queues/` | Public / JWT | Public users see open queues; staff see their business queues |
-| POST | `/api/auth/login/` | Public | Obtain JWT access and refresh tokens |
+| POST | `/api/auth/register/` | Public | Create a business and its first owner account |\n| POST | `/api/auth/login/` | Public | Obtain JWT access and refresh tokens |
 | POST | `/api/auth/refresh/` | Refresh token | Refresh an access token |
 | POST | `/api/tokens/generate/` | Public | Create a customer token |
 | GET | `/api/tokens/public/{public_uuid}/status/` | Public UUID | Read token status and waiting estimate |
@@ -199,9 +197,9 @@ All paths below are relative to the backend origin.
 | POST | `/api/tokens/queues/{queue_uuid}/call-next/` | JWT + queue access | Complete the current token and call the next waiting token |
 | POST | `/api/tokens/{token_id}/complete/` | JWT + queue access | Mark a serving token as completed |
 | POST | `/api/tokens/{token_id}/skip/` | JWT + queue access | Skip a waiting or serving token |
-| POST | `/api/queues/{queue_uuid}/status/` | JWT + queue access | Open or close a queue |
+| POST | `/api/queues/create/` | Owner JWT | Create a queue for the owner’s business |\n| POST | `/api/queues/{queue_uuid}/status/` | JWT + queue access | Open or close a queue |
 
-The token-generation request accepts JSON with `name`, `queue_id` and optional `phone`. Queue status changes accept JSON with a Boolean `is_open` value.
+The owner-registration request accepts `username`, `password`, `place_name`, `place_kind` and optional `email`. Queue creation accepts `name` and optional `default_minutes` (1–120). Token generation accepts `name`, `queue_id` and optional `phone`. Queue status changes accept JSON with a Boolean `is_open` value.
 
 ## Configuration reference
 
@@ -237,7 +235,7 @@ GitHub Actions is configured to run backend migration checks, backend tests and 
 
 ## Deployment notes
 
-The production frontend and backend are hosted on Render. Configure the environment variables above in the Render services, use PostgreSQL and Redis for deployed data and real-time messaging, and set the frontend origin in `CORS_ALLOWED_ORIGINS`.
+The production frontend and backend are hosted on Render. Configure the environment variables above in the Render services, use PostgreSQL and Redis for deployed data and real-time messaging, and set the frontend origin in `CORS_ALLOWED_ORIGINS`. Because customer tracking uses URLs such as `/token/{public_uuid}`, configure the Render static site to rewrite unknown paths to `/index.html`; otherwise opening or refreshing a shared token URL may return a 404.
 
 **Do not run database migrations against production until the migration chain has been tested against a backup or staging database.** A development-branch commit does not update the live application by itself.
 
