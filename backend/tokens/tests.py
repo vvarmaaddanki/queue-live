@@ -264,3 +264,41 @@ class StaffTokenActionTests(TestCase):
         self.assertEqual(response.status_code, 409)
         token.refresh_from_db()
         self.assertEqual(token.status, Token.Status.DONE)
+
+
+class PublicTokenGenerationApiTests(TestCase):
+    def setUp(self):
+        self.place = Place.objects.create(name="Public API Clinic", kind="clinic")
+        self.queue = Queue.objects.create(place=self.place, name="General")
+        self.client = APIClient()
+
+    def test_customer_can_create_token_with_valid_details(self):
+        response = self.client.post("/api/tokens/generate/", {
+            "name": "API Customer",
+            "phone": "9876543210",
+            "queue_id": str(self.queue.id),
+        }, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(response.json().get("public_id"))
+        token = Token.objects.get(public_id=response.json()["public_id"])
+        self.assertEqual(token.name, "API Customer")
+        self.assertEqual(token.phone, "9876543210")
+
+    def test_token_generation_rejects_invalid_phone(self):
+        response = self.client.post("/api/tokens/generate/", {
+            "name": "Invalid Phone",
+            "phone": "123",
+            "queue_id": str(self.queue.id),
+        }, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Token.objects.count(), 0)
+
+    def test_token_generation_rejects_closed_queue(self):
+        self.queue.is_open = False
+        self.queue.save(update_fields=["is_open"])
+        response = self.client.post("/api/tokens/generate/", {
+            "name": "Closed Queue Customer",
+            "queue_id": str(self.queue.id),
+        }, format="json")
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(Token.objects.count(), 0)
