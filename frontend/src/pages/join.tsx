@@ -65,7 +65,7 @@ export default function Join({ queues, onBack }: JoinProps) {
     const refreshTokenStatus = async () => {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/tokens/${token.token_id}/status/`,
+          `${API_BASE_URL}/api/tokens/public/${token.public_id}/status/`,
           {
             method: "GET",
             headers: {
@@ -130,7 +130,7 @@ export default function Join({ queues, onBack }: JoinProps) {
 
       socket?.close();
     };
-  }, [token?.token_id, token?.queue_id]);
+  }, [token?.public_id, token?.queue_id]);
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>
