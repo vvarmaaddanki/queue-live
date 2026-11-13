@@ -1,7 +1,11 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.contrib.auth import get_user_model, password_validation
 from django.db import IntegrityError, transaction
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
+from django.conf import settings
+from io import BytesIO
+import qrcode
+from qrcode.image.svg import SvgPathImage
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.throttling import AnonRateThrottle
@@ -179,3 +183,36 @@ def create_queue(request):
         "is_open": queue.is_open,
         "default_minutes": queue.default_minutes,
     }, status=201)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def public_queue_qr(request, public_id):
+    """Return a self-hosted SVG QR code for an open queue's public join page."""
+    queue = Queue.objects.filter(public_id=public_id, is_open=True).first()
+    if queue is None:
+        return JsonResponse({"error": "Open queue not found"}, status=404)
+
+    frontend_url = getattr(
+        settings,
+        "FRONTEND_URL",
+        "https://queue-live-frontend.onrender.com",
+    ).rstrip("/")
+    join_url = f"{frontend_url}/join/{queue.public_id}"
+
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=8,
+        border=4,
+    )
+    qr.add_data(join_url)
+    qr.make(fit=True)
+    image = qr.make_image(image_factory=SvgPathImage)
+    output = BytesIO()
+    image.save(output)
+
+    response = HttpResponse(output.getvalue(), content_type="image/svg+xml")
+    response["Cache-Control"] = "public, max-age=300"
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
