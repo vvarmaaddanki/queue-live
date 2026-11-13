@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from places.models import Queue
 from tokens.views import broadcast_queue_update, user_can_manage_queue
@@ -14,7 +14,7 @@ def health_check(request):
     })
 
 
-def queue_list(request):
+@api_view(["GET"])\n@permission_classes([AllowAny])\ndef queue_list(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             queues = Queue.objects.select_related("place").all()
