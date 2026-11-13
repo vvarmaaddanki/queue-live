@@ -10,28 +10,28 @@ Do not run `python manage.py migrate` against the live Render database as part o
 
 The following operations are present in migrations already shared with the `main` branch:
 
-1. `places.0003` removes `Place.address`, `Queue.capacity`, `Queue.current_people`, and `Queue.location`. Any values in those columns are deleted when this migration is applied.
-2. `tokens.0002` adds a new `Token.name` field with a timestamp default. It does not copy the existing `customer_name` values into `name`.
-3. `tokens.0003` removes `Token.customer_name`, `Token.phone`, and `Token.public_id`. Existing values in those columns are deleted when this migration is applied.
-4. `tokens.0006` adds `phone` back as an empty field and creates new public UUIDs. It cannot recover the old phone numbers or old public UUIDs after the earlier migration removed them. Previously shared token URLs would not be preserved.
+1. The original `places.0003` migration removed `Place.address`, `Queue.capacity`, `Queue.current_people`, and `Queue.location`. The development branch now retains these fields in both the migration state and models so their existing database values are not dropped.
+2. The original `tokens.0002` migration added `Token.name` but did not copy the old `customer_name`. The development branch now copies `customer_name` into `name` before later migrations run.
+3. The original `tokens.0003` migration removed `Token.phone` and `Token.public_id` as well as `customer_name`. The development branch now removes only `customer_name`; phone numbers and public UUIDs remain intact.
+4. The development branch removes the later `tokens.0006` migration because it would have re-added fields that should never have been removed.
 
-These are data-loss risks, not merely schema changes. The current development branch does not silently rewrite old migrations because those migrations may already be recorded as applied in a live database. Rewriting an applied migration would not safely repair an existing database.
+These were data-loss risks, not merely schema changes. The development branch now corrects the migration chain before the planned release. This correction is safe only if the affected migrations have not already been applied to a persistent database. If any environment has already recorded these migrations as applied, do not deploy this rewritten history there; first inspect its `django_migrations` table and prepare a separate forward-only repair migration.
 
 ## Required pre-deployment checks
 
 Perform these steps against a copy of the production database first:
 
 1. Take a fresh PostgreSQL backup and verify that the backup file can be read.
-2. Record the deployed application commit and the current migration state:
+2. Confirm whether any migration in this chain has already been applied to the Render database. Do not infer this from whether you personally ran the command; Render start/release commands or Docker entrypoints may run it automatically.
+3. Record the deployed application commit and the current migration state:
    ```bash
    python manage.py showmigrations places tokens
    ```
-3. Inspect the SQL for each migration that is still unapplied:
+4. Inspect the SQL for each migration that is still unapplied:
    ```bash
    python manage.py sqlmigrate places 0003
    python manage.py sqlmigrate tokens 0002
    python manage.py sqlmigrate tokens 0003
-   python manage.py sqlmigrate tokens 0006
    ```
 4. Restore the backup into a separate staging database. Never use the only production database as the rehearsal target.
 5. Apply the proposed migrations to staging only. Compare before/after row counts and verify sample businesses, queues, customers, phone numbers, token numbers, statuses and token links.
