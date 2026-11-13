@@ -58,6 +58,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [loadingQueues, setLoadingQueues] = useState(false);
   const [loadingTokens, setLoadingTokens] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -307,6 +308,43 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     );
   };
 
+  const exportQueueCsv = async () => {
+    if (!selectedQueueId) return;
+    const accessToken = localStorage.getItem("access");
+    if (!accessToken) {
+      setError("Your session has expired. Please log in again.");
+      setIsAuthenticated(false);
+      return;
+    }
+
+    try {
+      setExportLoading(true);
+      setError("");
+      const response = await fetch(
+        `${API_BASE_URL}/tokens/queues/${selectedQueueId}/export/`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || data.detail || "Unable to export queue data.");
+      }
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `queue-${selectedQueueId}-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+      setNotice("Queue CSV exported.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to export queue data.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   const selectedQueue = queues.find((queue) => queue.id === selectedQueueId);
 
   const toggleQueueStatus = async () => {
@@ -452,6 +490,14 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                 {selectedQueue.is_open ? "Close Queue" : "Open Queue"}
               </button>
             )}
+
+            <button
+              className="admin-refresh-button"
+              onClick={exportQueueCsv}
+              disabled={exportLoading || selectedQueueId === null}
+            >
+              {exportLoading ? "Exporting..." : "Export CSV"}
+            </button>
           </div>
 
           <section className="admin-queue-selector">
