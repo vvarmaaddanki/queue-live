@@ -184,3 +184,4 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://queue-live-frontend.onrender.com")
