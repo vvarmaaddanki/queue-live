@@ -15,7 +15,6 @@ type JoinProps = {
 };
 
 type JoinedToken = {
-  token_id: number;
   public_id: string;
   name: string;
   queue_id: string;
@@ -28,7 +27,6 @@ type JoinedToken = {
 };
 
 type TokenStatusResponse = {
-  token_id: number;
   name: string;
   queue_id: string;
   token_number: number;
