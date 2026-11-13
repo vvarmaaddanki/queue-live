@@ -133,7 +133,6 @@ def token_status_view(request, public_id):
 
     average_minutes = token.queue.average_minutes() if token.queue else 10
     return JsonResponse({
-        "token_id": token.id,
         "name": token.name,
         "queue_id": str(token.queue_id) if token.queue_id else None,
         "token_number": token.number,
