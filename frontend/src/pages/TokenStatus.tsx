@@ -90,8 +90,11 @@ export default function TokenStatus() {
 
           if (
             update.event === "token_called" ||
+            update.event === "queue_advanced" ||
             update.event === "token_completed" ||
-            update.event === "token_skipped" ||\n            update.event === "token_cancelled" ||\n            update.event === "queue_status_changed"
+            update.event === "token_skipped" ||
+            update.event === "token_cancelled" ||
+            update.event === "queue_status_changed"
           ) {
             fetchStatus();
           }
