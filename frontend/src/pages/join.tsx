@@ -346,7 +346,14 @@ export default function Join({ queues, onBack }: JoinProps) {
               Your status updates automatically every 5 seconds.
             </p>
 
-            {token.status.toLowerCase() === "waiting" && (\n              <button type="button" onClick={cancelToken} disabled={cancelling}>\n                {cancelling ? "Cancelling..." : "Cancel Token"}\n              </button>\n            )}\n            {error && <p className="error-message">{error}</p>}\n\n            <button type="button" onClick={resetForm}>
+            {token.status.toLowerCase() === "waiting" && (
+              <button type="button" onClick={cancelToken} disabled={cancelling}>
+                {cancelling ? "Cancelling..." : "Cancel Token"}
+              </button>
+            )}
+            {error && <p className="error-message">{error}</p>}
+
+            <button type="button" onClick={resetForm}>
               Join Another Queue
             </button>
           </div>
