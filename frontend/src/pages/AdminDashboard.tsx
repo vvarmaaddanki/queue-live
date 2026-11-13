@@ -440,6 +440,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const waitingTokens = tokens.filter((token) => token.status === "waiting");
   const completedTokens = tokens.filter((token) => token.status === "done");
   const skippedTokens = tokens.filter((token) => token.status === "skipped");
+  const cancelledTokens = tokens.filter((token) => token.status === "cancelled");
 
   return (
     <div className="admin-dashboard">
@@ -720,6 +721,12 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <span className="admin-stat-label">Skipped</span>
                   <strong>{skippedTokens.length}</strong>
                   <span className="admin-stat-note">Skipped tokens</span>
+                </div>
+
+                <div className="admin-stat-card">
+                  <span className="admin-stat-label">Cancelled</span>
+                  <strong>{cancelledTokens.length}</strong>
+                  <span className="admin-stat-note">Customer cancellations</span>
                 </div>
               </section>
 
