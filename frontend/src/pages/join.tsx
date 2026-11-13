@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./join.css";
 
 type Queue = {
@@ -15,7 +16,7 @@ type JoinProps = {
 };
 
 type JoinedToken = {
-  token_id: number;
+  public_id: string;
   name: string;
   queue_id: string;
   service_date: string;
@@ -27,7 +28,6 @@ type JoinedToken = {
 };
 
 type TokenStatusResponse = {
-  token_id: number;
   name: string;
   queue_id: string;
   token_number: number;
@@ -44,12 +44,14 @@ const API_BASE_URL = (
 ).replace(/\/$/, "");
 
 export default function Join({ queues, onBack }: JoinProps) {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [selectedQueue, setSelectedQueue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [token, setToken] = useState<JoinedToken | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -63,7 +65,7 @@ export default function Join({ queues, onBack }: JoinProps) {
     const refreshTokenStatus = async () => {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/tokens/${token.token_id}/status/`,
+          `${API_BASE_URL}/api/tokens/public/${token.public_id}/status/`,
           {
             method: "GET",
             headers: {
@@ -128,7 +130,7 @@ export default function Join({ queues, onBack }: JoinProps) {
 
       socket?.close();
     };
-  }, [token?.token_id, token?.queue_id]);
+  }, [token?.public_id, token?.queue_id]);
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>
@@ -177,6 +179,7 @@ export default function Join({ queues, onBack }: JoinProps) {
           },
           body: JSON.stringify({
             name: customerName,
+            phone: phone.trim(),
             queue_id: queue.id,
           }),
         }
@@ -202,10 +205,14 @@ export default function Join({ queues, onBack }: JoinProps) {
         );
       }
 
+      if (!responseData.public_id) {
+        throw new Error("The server did not return a valid token link. Please try again.");
+      }
       setToken({
         ...responseData,
         queue_name: queue.name,
       });
+      navigate(`/token/${responseData.public_id}`);
     } catch (err) {
       if (err instanceof TypeError) {
         setError(
@@ -220,6 +227,25 @@ export default function Join({ queues, onBack }: JoinProps) {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cancelToken = async () => {
+    if (!token || !window.confirm("Cancel your waiting token?")) return;
+    setCancelling(true);
+    setError("");
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/tokens/public/${token.public_id}/cancel/`,
+        { method: "POST", headers: { Accept: "application/json" } }
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to cancel token.");
+      setToken((current) => current ? { ...current, status: data.status } : current);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to cancel token.");
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -323,6 +349,13 @@ export default function Join({ queues, onBack }: JoinProps) {
             <p className="form-description">
               Your status updates automatically every 5 seconds.
             </p>
+
+            {token.status.toLowerCase() === "waiting" && (
+              <button type="button" onClick={cancelToken} disabled={cancelling}>
+                {cancelling ? "Cancelling..." : "Cancel Token"}
+              </button>
+            )}
+            {error && <p className="error-message">{error}</p>}
 
             <button type="button" onClick={resetForm}>
               Join Another Queue

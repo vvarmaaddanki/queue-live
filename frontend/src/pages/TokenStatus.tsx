@@ -5,14 +5,16 @@ import "./TokenStatus.css";
 type TokenStatusData = {
   token_id: number;
   name: string;
-  queue_id: number;
+  queue_id: string;
   token_number: number;
   status: string;
   customers_ahead: number;
   estimated_wait_minutes: number;
 };
 
-const API_BASE_URL = "https://queue-live-backend.onrender.com"
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "https://queue-live-backend.onrender.com"
+).replace(/\/$/, "");
 
 export default function TokenStatus() {
   const { tokenId } = useParams<{ tokenId: string }>();
@@ -21,6 +23,8 @@ export default function TokenStatus() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [liveConnected, setLiveConnected] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState("");
 
   useEffect(() => {
     if (!tokenId) {
@@ -36,7 +40,7 @@ export default function TokenStatus() {
     const fetchStatus = async () => {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/tokens/${tokenId}/status/`
+          `${API_BASE_URL}/api/tokens/public/${tokenId}/status/`
         );
 
         if (!response.ok) {
@@ -66,11 +70,12 @@ export default function TokenStatus() {
       }
     };
 
-    const connectWebSocket = (queueId: number) => {
+    const connectWebSocket = (queueId: string) => {
       if (!isActive) return;
 
+      const websocketBaseUrl = API_BASE_URL.replace(/^http/, "ws");
       socket = new WebSocket(
-        `ws://queue-live-backend.onrender.com/ws/queues/${queueId}/`
+        `${websocketBaseUrl}/ws/queues/${encodeURIComponent(queueId)}/`
       );
 
       socket.onopen = () => {
@@ -87,8 +92,11 @@ export default function TokenStatus() {
 
           if (
             update.event === "token_called" ||
+            update.event === "queue_advanced" ||
             update.event === "token_completed" ||
-            update.event === "token_skipped"
+            update.event === "token_skipped" ||
+            update.event === "token_cancelled" ||
+            update.event === "queue_status_changed"
           ) {
             fetchStatus();
           }
@@ -135,6 +143,27 @@ export default function TokenStatus() {
       }
     };
   }, [tokenId]);
+
+  const cancelToken = async () => {
+    if (!tokenId || !window.confirm("Cancel your waiting token?")) return;
+    setCancelling(true);
+    setCancelError("");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tokens/public/${tokenId}/cancel/`, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to cancel token.");
+      }
+      setToken((current) => current ? { ...current, status: data.status } : current);
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : "Unable to cancel token.");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -257,6 +286,18 @@ export default function TokenStatus() {
             <p>This queue token is no longer active.</p>
           </div>
         )}
+
+        {status === "waiting" && (
+          <button
+            type="button"
+            className="home-link cancel-token-button"
+            onClick={cancelToken}
+            disabled={cancelling}
+          >
+            {cancelling ? "Cancelling..." : "Cancel Token"}
+          </button>
+        )}
+        {cancelError && <p className="error-message">{cancelError}</p>}
 
         <div className="live-update-note">
           <span className="live-note-dot" />

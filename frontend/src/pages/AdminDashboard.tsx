@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { apiRequest } from "../api/client";
 import "./AdminDashboard.css";
 
-const API_BASE_URL = "https://queue-live-backend.onrender.com/api";
+const API_BASE_URL = `${(import.meta.env.VITE_API_BASE_URL || "https://queue-live-backend.onrender.com").replace(/\/$/, "")}/api`;
 
 type Queue = {
-  id: number;
+  id: string;
   public_id: string;
   name: string;
   place: string;
@@ -15,6 +15,7 @@ type Queue = {
 
 type QueueResponse = {
   queues: Queue[];
+  role?: string | null;
 };
 
 type QueueToken = {
@@ -27,7 +28,7 @@ type QueueToken = {
 };
 
 type QueueTokensResponse = {
-  queue_id: number;
+  queue_id: string;
   queue_name: string;
   tokens: QueueToken[];
 };
@@ -49,15 +50,27 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+  const [registerUsername, setRegisterUsername] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [placeName, setPlaceName] = useState("");
+  const [placeKind, setPlaceKind] = useState("clinic");
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [newQueueName, setNewQueueName] = useState("");
+  const [newQueueMinutes, setNewQueueMinutes] = useState("10");
+  const [createQueueLoading, setCreateQueueLoading] = useState(false);
 
   const [queues, setQueues] = useState<Queue[]>([]);
-  const [selectedQueueId, setSelectedQueueId] = useState<number | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [selectedQueueId, setSelectedQueueId] = useState<string | null>(null);
   const [tokens, setTokens] = useState<QueueToken[]>([]);
   const [queueName, setQueueName] = useState("");
 
   const [loadingQueues, setLoadingQueues] = useState(false);
   const [loadingTokens, setLoadingTokens] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -122,6 +135,61 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     }
   };
 
+  const handleRegister = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setNotice("");
+    try {
+      setRegisterLoading(true);
+      const response = await fetch(`${API_BASE_URL}/auth/register/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          username: registerUsername.trim(),
+          email: registerEmail.trim(),
+          password: registerPassword,
+          place_name: placeName.trim(),
+          place_kind: placeKind,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || data.detail || "Registration failed.");
+      setUsername(registerUsername.trim());
+      setPassword("");
+      setRegisterPassword("");
+      setShowRegister(false);
+      setNotice("Business owner account created. Log in with your new username and password.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create owner account.");
+    } finally {
+      setRegisterLoading(false);
+    }
+  };
+
+  const handleCreateQueue = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setNotice("");
+    try {
+      setCreateQueueLoading(true);
+      await apiRequest("/queues/create/", {
+        method: "POST",
+        body: JSON.stringify({
+          name: newQueueName.trim(),
+          default_minutes: Number(newQueueMinutes),
+        }),
+      });
+      setNewQueueName("");
+      setNewQueueMinutes("10");
+      setNotice("Queue created successfully.");
+      await loadQueues();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create queue.");
+    } finally {
+      setCreateQueueLoading(false);
+    }
+  };
+
   // Logout and remove saved tokens.
   const handleLogout = () => {
     localStorage.removeItem("access");
@@ -129,6 +197,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
     setIsAuthenticated(false);
     setQueues([]);
+    setUserRole(null);
     setTokens([]);
     setSelectedQueueId(null);
     setQueueName("");
@@ -150,6 +219,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       const availableQueues = response.queues ?? [];
 
       setQueues(availableQueues);
+      setUserRole(response.role ?? null);
 
       if (availableQueues.length > 0) {
         setSelectedQueueId((currentId) => {
@@ -182,7 +252,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   }, [isAuthenticated]);
 
   // Load tokens for the selected queue.
-  const loadTokens = useCallback(async (queueId: number) => {
+  const loadTokens = useCallback(async (queueId: string) => {
     if (!localStorage.getItem("access")) {
       setIsAuthenticated(false);
       return;
@@ -307,10 +377,70 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     );
   };
 
+  const exportQueueCsv = async () => {
+    if (!selectedQueueId) return;
+    const accessToken = localStorage.getItem("access");
+    if (!accessToken) {
+      setError("Your session has expired. Please log in again.");
+      setIsAuthenticated(false);
+      return;
+    }
+
+    try {
+      setExportLoading(true);
+      setError("");
+      const response = await fetch(
+        `${API_BASE_URL}/tokens/queues/${selectedQueueId}/export/`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || data.detail || "Unable to export queue data.");
+      }
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `queue-${selectedQueueId}-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+      setNotice("Queue CSV exported.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to export queue data.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const selectedQueue = queues.find((queue) => queue.id === selectedQueueId);
+
+  const toggleQueueStatus = async () => {
+    if (!selectedQueue) return;
+    try {
+      setActionLoading(true);
+      setError("");
+      setNotice("");
+      const nextStatus = !selectedQueue.is_open;
+      await apiRequest(`/queues/${selectedQueue.id}/status/`, {
+        method: "POST",
+        body: JSON.stringify({ is_open: nextStatus }),
+      });
+      setNotice(nextStatus ? "Queue opened successfully." : "Queue closed successfully.");
+      await loadQueues();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update queue status.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const servingToken = tokens.find((token) => token.status === "serving");
   const waitingTokens = tokens.filter((token) => token.status === "waiting");
   const completedTokens = tokens.filter((token) => token.status === "done");
   const skippedTokens = tokens.filter((token) => token.status === "skipped");
+  const cancelledTokens = tokens.filter((token) => token.status === "cancelled");
 
   return (
     <div className="admin-dashboard">
@@ -337,10 +467,48 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       {!isAuthenticated ? (
         <main className="admin-main">
           <section className="admin-login-card">
-            <p className="admin-eyebrow">STAFF ACCESS</p>
-            <h2>Staff Login</h2>
-            <p>Log in with your Django staff account to manage the queue.</p>
+            <p className="admin-eyebrow">BUSINESS ACCESS</p>
+            <h2>{showRegister ? "Register Your Business" : "Staff Login"}</h2>
+            <p>{showRegister
+              ? "Create your owner account and business workspace."
+              : "Log in with your business owner or staff account."}</p>
 
+            {showRegister ? (
+              <form className="admin-login-form" onSubmit={handleRegister}>
+                <div className="admin-form-field">
+                  <label htmlFor="owner-username">Username</label>
+                  <input id="owner-username" value={registerUsername} onChange={(event) => setRegisterUsername(event.target.value)} autoComplete="username" required maxLength={150} />
+                </div>
+                <div className="admin-form-field">
+                  <label htmlFor="owner-email">Email (optional)</label>
+                  <input id="owner-email" type="email" value={registerEmail} onChange={(event) => setRegisterEmail(event.target.value)} autoComplete="email" />
+                </div>
+                <div className="admin-form-field">
+                  <label htmlFor="business-name">Business name</label>
+                  <input id="business-name" value={placeName} onChange={(event) => setPlaceName(event.target.value)} required maxLength={120} />
+                </div>
+                <div className="admin-form-field">
+                  <label htmlFor="business-type">Business type</label>
+                  <select id="business-type" value={placeKind} onChange={(event) => setPlaceKind(event.target.value)}>
+                    <option value="clinic">Clinic</option>
+                    <option value="salon">Salon</option>
+                    <option value="tuition">Tuition centre</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="admin-form-field">
+                  <label htmlFor="owner-password">Password</label>
+                  <input id="owner-password" type="password" value={registerPassword} onChange={(event) => setRegisterPassword(event.target.value)} autoComplete="new-password" required minLength={8} />
+                </div>
+                {error && <div className="admin-alert admin-alert-error">{error}</div>}
+                <button type="submit" className="admin-primary-button" disabled={registerLoading} style={{ width: "100%", marginTop: "16px" }}>
+                  {registerLoading ? "Creating account..." : "Create Owner Account"}
+                </button>
+                <button type="button" className="admin-refresh-button" onClick={() => { setShowRegister(false); setError(""); }} style={{ width: "100%", marginTop: "10px" }}>
+                  Back to login
+                </button>
+              </form>
+            ) : (
             <form className="admin-login-form" onSubmit={handleLogin}>
               <div className="admin-form-field">
                 <label htmlFor="staff-username">Username</label>
@@ -399,7 +567,12 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               >
                 {loginLoading ? "Logging in..." : "Log in"}
               </button>
+              <button type="button" className="admin-refresh-button" onClick={() => { setShowRegister(true); setError(""); }} style={{ width: "100%", marginTop: "10px" }}>
+                Register a Business
+              </button>
             </form>
+            )}
+            {notice && <div className="admin-alert admin-alert-success">{notice}</div>}
           </section>
         </main>
       ) : (
@@ -420,7 +593,39 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             >
               ↻ Refresh
             </button>
+
+            {selectedQueue && (
+              <button
+                className="admin-refresh-button"
+                onClick={toggleQueueStatus}
+                disabled={actionLoading}
+              >
+                {selectedQueue.is_open ? "Close Queue" : "Open Queue"}
+              </button>
+            )}
+
+            <button
+              className="admin-refresh-button"
+              onClick={exportQueueCsv}
+              disabled={exportLoading || selectedQueueId === null}
+            >
+              {exportLoading ? "Exporting..." : "Export CSV"}
+            </button>
           </div>
+
+          {(userRole === "owner" || userRole === "superuser") && (
+          <section className="admin-queue-selector">
+            <form onSubmit={handleCreateQueue} className="admin-login-form">
+              <label htmlFor="new-queue-name">Create a queue</label>
+              <input id="new-queue-name" value={newQueueName} onChange={(event) => setNewQueueName(event.target.value)} placeholder="e.g. General Consultation" required maxLength={80} />
+              <label htmlFor="new-queue-minutes">Average service time (minutes)</label>
+              <input id="new-queue-minutes" type="number" min="1" max="120" step="1" value={newQueueMinutes} onChange={(event) => setNewQueueMinutes(event.target.value)} required />
+              <button type="submit" className="admin-primary-button" disabled={createQueueLoading}>
+                {createQueueLoading ? "Creating..." : "Create Queue"}
+              </button>
+            </form>
+          </section>
+          )}
 
           <section className="admin-queue-selector">
             <label htmlFor="admin-queue-select">Select queue</label>
@@ -429,9 +634,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               id="admin-queue-select"
               value={selectedQueueId ?? ""}
               onChange={(event) =>
-                setSelectedQueueId(
-                  event.target.value ? Number(event.target.value) : null
-                )
+                setSelectedQueueId(event.target.value || null)
               }
               disabled={loadingQueues || queues.length === 0}
             >
@@ -446,6 +649,30 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               ))}
             </select>
           </section>
+
+          {selectedQueue?.is_open && (
+            <section className="admin-qr-card">
+              <div>
+                <p className="admin-eyebrow">CUSTOMER QUICK JOIN</p>
+                <h3>Share this queue QR code</h3>
+                <p>Customers can scan this code with their phone camera to open the queue join page.</p>
+                <a
+                  className="admin-qr-link"
+                  href={`${(import.meta.env.VITE_APP_URL || "https://queue-live-frontend.onrender.com").replace(/\/$/, "")}/join/${selectedQueue.public_id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open customer join page
+                </a>
+              </div>
+              <img
+                className="admin-qr-image"
+                src={`${API_BASE_URL}/queues/public/${selectedQueue.public_id}/qr/`}
+                alt={`QR code to join ${selectedQueue.name}`}
+                loading="lazy"
+              />
+            </section>
+          )}
 
           {loadingQueues && (
             <div className="admin-message">Loading queues...</div>
@@ -494,6 +721,12 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
                   <span className="admin-stat-label">Skipped</span>
                   <strong>{skippedTokens.length}</strong>
                   <span className="admin-stat-note">Skipped tokens</span>
+                </div>
+
+                <div className="admin-stat-card">
+                  <span className="admin-stat-label">Cancelled</span>
+                  <strong>{cancelledTokens.length}</strong>
+                  <span className="admin-stat-note">Customer cancellations</span>
                 </div>
               </section>
 

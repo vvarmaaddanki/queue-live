@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { apiRequest } from "./api/client";
 import Join from "./pages/join";
 import AdminDashboard from "./pages/AdminDashboard";
+import TokenStatus from "./pages/TokenStatus";
 import "./App.css";
 
 type Queue = {
@@ -21,9 +23,11 @@ function App() {
   const [queues, setQueues] = useState<Queue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showJoinPage, setShowJoinPage] = useState(false);
-  const [selectedQueue, setSelectedQueue] = useState<Queue | null>(null);
-  const [showAdmin, setShowAdmin] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const selectedQueueId = location.pathname.startsWith("/join/")
+    ? decodeURIComponent(location.pathname.slice("/join/".length))
+    : "";
 
   const loadQueues = async () => {
     try {
@@ -48,32 +52,31 @@ function App() {
   }, []);
 
   const openJoinPage = (queue: Queue) => {
-    setSelectedQueue(queue);
-    setShowJoinPage(true);
+    navigate(`/join/${encodeURIComponent(queue.public_id)}`);
   };
 
-  const closeJoinPage = () => {
-    setShowJoinPage(false);
-    setSelectedQueue(null);
-  };
+  const openHomePage = () => navigate("/");
 
-  const openHomePage = () => {
-    setShowAdmin(false);
-    setShowJoinPage(false);
-    setSelectedQueue(null);
-  };
+  if (location.pathname.startsWith("/token/")) {
+    return <TokenStatus />;
+  }
 
-  if (showAdmin) {
+  if (location.pathname === "/staff") {
     return <AdminDashboard onBack={openHomePage} />;
   }
 
-  if (showJoinPage && selectedQueue) {
-    return (
-      <Join
-        queues={[selectedQueue]}
-        onBack={closeJoinPage}
-      />
-    );
+  if (selectedQueueId) {
+    if (loading) return <div className="loading-message">Loading queue...</div>;
+    const selectedQueue = queues.find((queue) => queue.public_id === selectedQueueId);
+    if (!selectedQueue) {
+      return (
+        <div className="empty-message">
+          Queue not found or no longer available.
+          <button type="button" onClick={openHomePage}>Return to home</button>
+        </div>
+      );
+    }
+    return <Join queues={[selectedQueue]} onBack={openHomePage} />;
   }
 
   return (
@@ -97,7 +100,7 @@ function App() {
           <button
             type="button"
             className="nav-admin-button"
-            onClick={() => setShowAdmin(true)}
+            onClick={() => navigate("/staff")}
           >
             Staff Dashboard
           </button>
