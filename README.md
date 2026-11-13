@@ -86,6 +86,20 @@ queue-live/
 
 ## Run locally
 
+### Option A: Docker Compose (recommended)
+
+Install Docker Desktop, then from the repository root run:
+
+```bash
+docker compose up --build
+```
+
+Open the frontend at `http://localhost:5173` and the backend health check at `http://localhost:8000/api/health/`. Compose starts PostgreSQL, Redis, Django/Daphne and the Nginx-served React frontend. The backend container applies migrations to the local Docker database on startup. These Compose credentials are for local development only; do not reuse them in production.
+
+Stop the services with `Ctrl+C`, then run `docker compose down`. To also delete the local PostgreSQL volume and its data, run `docker compose down -v`.
+
+### Option B: Run services manually
+
 ### Prerequisites
 
 - Python version supported by the pinned Django release.
@@ -214,6 +228,8 @@ The owner-registration request accepts `username`, `password`, `place_name`, `pl
 | `VITE_API_BASE_URL` | Frontend backend origin, without the `/api` suffix |\n| `VITE_APP_URL` | Optional public frontend origin used to display QR destination links |\n| `FRONTEND_URL` | Backend setting used to encode the frontend origin into queue QR codes |
 
 ## Tests and build
+
+Docker images and the Compose configuration are also checked by GitHub Actions. Build them locally with `docker compose build`.
 
 Backend tests:
 
