@@ -72,6 +72,20 @@ class TokenModelTest(TestCase):
             2,
         )
 
+    def test_token_creation_stores_customer_phone(self):
+        token = create_token(
+            queue_id=self.queue.pk,
+            name="Customer with phone",
+            phone="9876543210",
+        )
+        self.assertEqual(token.phone, "9876543210")
+
+    def test_closed_queue_rejects_token_creation(self):
+        self.queue.is_open = False
+        self.queue.save(update_fields=["is_open"])
+        with self.assertRaisesMessage(ValueError, "This queue is currently closed"):
+            create_token(queue_id=self.queue.pk, name="Late Customer")
+
 
 class QueueStaffAccessTest(TestCase):
     def setUp(self):
