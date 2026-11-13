@@ -13,8 +13,7 @@ class Place(models.Model):
         OTHER = "other", "Other"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=150)
-    address = models.CharField(max_length=255, blank=True)
+    name = models.CharField(max_length=120)
     kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.CLINIC)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -32,11 +31,7 @@ class StaffProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="staff_profile",
     )
-    place = models.ForeignKey(
-        Place,
-        on_delete=models.CASCADE,
-        related_name="staff",
-    )
+    place = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="staff")
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.OWNER)
 
 
@@ -44,12 +39,7 @@ class Queue(models.Model):
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     place = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="queues")
-    name = models.CharField(max_length=100)
-    # Retained for compatibility with records created by the original schema.
-    location = models.CharField(max_length=200, blank=True)
-    capacity = models.PositiveIntegerField(default=50)
-    current_people = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
+    name = models.CharField(max_length=80)
     is_open = models.BooleanField(default=True)
     default_minutes = models.PositiveSmallIntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
