@@ -14,7 +14,9 @@ def health_check(request):
     })
 
 
-@api_view(["GET"])\n@permission_classes([AllowAny])\ndef queue_list(request):
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def queue_list(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             queues = Queue.objects.select_related("place").all()
