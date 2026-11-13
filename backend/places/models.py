@@ -16,7 +16,7 @@ class Place(models.Model):
     name = models.CharField(max_length=120)
     # Retained for compatibility with databases created by earlier versions.
     # These fields are not used by the current queue workflow or public API.
-    address = models.CharField(max_length=255, blank=True, default="", editable=False)
+    address = models.CharField(max_length=255, blank=True)
     kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.CLINIC)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -45,9 +45,9 @@ class Queue(models.Model):
     name = models.CharField(max_length=80)
     # Retained legacy columns; do not remove until an explicit data migration
     # exports or maps existing values.
-    location = models.CharField(max_length=200, blank=True, default="", editable=False)
-    capacity = models.PositiveIntegerField(default=50, editable=False)
-    current_people = models.PositiveIntegerField(default=0, editable=False)
+    location = models.CharField(max_length=200, blank=True)
+    capacity = models.PositiveIntegerField(default=50)
+    current_people = models.PositiveIntegerField(default=0)
     is_open = models.BooleanField(default=True)
     default_minutes = models.PositiveSmallIntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
