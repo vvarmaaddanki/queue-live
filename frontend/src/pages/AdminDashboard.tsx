@@ -649,6 +649,30 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             </select>
           </section>
 
+          {selectedQueue?.is_open && (
+            <section className="admin-qr-card">
+              <div>
+                <p className="admin-eyebrow">CUSTOMER QUICK JOIN</p>
+                <h3>Share this queue QR code</h3>
+                <p>Customers can scan this code with their phone camera to open the queue join page.</p>
+                <a
+                  className="admin-qr-link"
+                  href={`${(import.meta.env.VITE_APP_URL || "https://queue-live-frontend.onrender.com").replace(/\/$/, "")}/join/${selectedQueue.public_id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open customer join page
+                </a>
+              </div>
+              <img
+                className="admin-qr-image"
+                src={`${API_BASE_URL}/queues/public/${selectedQueue.public_id}/qr/`}
+                alt={`QR code to join ${selectedQueue.name}`}
+                loading="lazy"
+              />
+            </section>
+          )}
+
           {loadingQueues && (
             <div className="admin-message">Loading queues...</div>
           )}
