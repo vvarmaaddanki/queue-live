@@ -80,6 +80,8 @@ def create_token_view(request):
 
     try:
         token = create_token(queue_id=queue.id, name=name, phone=phone)
+    except ValueError as exc:
+        return JsonResponse({"error": str(exc)}, status=409)
     except Exception:
         return JsonResponse({"error": "Unable to generate token"}, status=500)
 
