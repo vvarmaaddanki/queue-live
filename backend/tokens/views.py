@@ -6,6 +6,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -192,8 +193,9 @@ def token_status_view(request, public_id):
 
 @csrf_exempt
 @require_POST
+@transaction.atomic
 def cancel_token_view(request, public_id):
-    token = get_object_or_404(Token, public_id=public_id)
+    token = get_object_or_404(Token.objects.select_for_update(), public_id=public_id)
     if token.status != Token.Status.WAITING:
         return JsonResponse({"error": "Only waiting tokens can be cancelled"}, status=409)
 
@@ -236,8 +238,9 @@ def queue_tokens_view(request, queue_id):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@transaction.atomic
 def complete_token_view(request, token_id):
-    token = get_object_or_404(Token, id=token_id)
+    token = get_object_or_404(Token.objects.select_related("queue").select_for_update(), id=token_id)
     if not token.queue or not user_can_manage_queue(request.user, token.queue):
         return JsonResponse({"error": "You do not have access to this token"}, status=403)
     if token.status != Token.Status.SERVING:
@@ -251,8 +254,9 @@ def complete_token_view(request, token_id):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@transaction.atomic
 def skip_token_view(request, token_id):
-    token = get_object_or_404(Token, id=token_id)
+    token = get_object_or_404(Token.objects.select_related("queue").select_for_update(), id=token_id)
     if not token.queue or not user_can_manage_queue(request.user, token.queue):
         return JsonResponse({"error": "You do not have access to this token"}, status=403)
     if token.status not in [Token.Status.WAITING, Token.Status.SERVING]:
