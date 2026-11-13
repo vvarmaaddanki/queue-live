@@ -1,8 +1,10 @@
 from django.test import TestCase
+from django.contrib.auth import get_user_model
 
-from places.models import Place, Queue
+from places.models import Place, Queue, StaffProfile
 from tokens.models import Token
 from tokens.services import create_token
+from tokens.views import user_can_manage_queue
 
 
 class TokenModelTest(TestCase):
@@ -67,3 +69,44 @@ class TokenModelTest(TestCase):
             second.number,
             2,
         )
+
+
+class QueueStaffAccessTest(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.place = Place.objects.create(name="Clinic A", kind="clinic")
+        self.other_place = Place.objects.create(name="Clinic B", kind="clinic")
+        self.queue = Queue.objects.create(place=self.place, name="General")
+        self.owner = User.objects.create_user(
+            username="clinic-owner",
+            password="test-password",
+        )
+        StaffProfile.objects.create(
+            user=self.owner,
+            place=self.place,
+            role=StaffProfile.Role.OWNER,
+        )
+        self.other_staff = User.objects.create_user(
+            username="other-staff",
+            password="test-password",
+        )
+        StaffProfile.objects.create(
+            user=self.other_staff,
+            place=self.other_place,
+            role=StaffProfile.Role.STAFF,
+        )
+
+    def test_owner_can_manage_queue_in_own_place(self):
+        self.assertTrue(user_can_manage_queue(self.owner, self.queue))
+
+    def test_staff_from_another_place_cannot_manage_queue(self):
+        self.assertFalse(user_can_manage_queue(self.other_staff, self.queue))
+
+    def test_superuser_can_manage_queue(self):
+        User = get_user_model()
+        admin = User.objects.create_superuser(
+            username="site-admin",
+            email="admin@example.com",
+            password="test-password",
+        )
+        self.assertTrue(user_can_manage_queue(admin, self.queue))
