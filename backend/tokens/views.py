@@ -1,10 +1,11 @@
+import csv
 import json
 import uuid
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -91,6 +92,46 @@ def create_token_view(request):
         "number": token.number,
         "status": token.status,
     }, status=201)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def export_queue_tokens_view(request, queue_id):
+    queue = get_object_or_404(Queue, id=queue_id)
+    if not user_can_manage_queue(request.user, queue):
+        return JsonResponse({"error": "You do not have access to this queue"}, status=403)
+
+    tokens = Token.objects.filter(
+        queue=queue,
+        service_date=timezone.localdate(),
+    ).order_by("number")
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = (
+        f'attachment; filename="queue-{queue.id}-{timezone.localdate()}.csv"'
+    )
+    response.write("\\ufeff")
+    writer = csv.writer(response)
+    writer.writerow([
+        "Token Number",
+        "Customer Name",
+        "Mobile Number",
+        "Status",
+        "Created At",
+        "Started At",
+        "Finished At",
+    ])
+    for token in tokens:
+        writer.writerow([
+            token.number,
+            token.name,
+            token.phone,
+            token.status,
+            token.created_at.isoformat() if token.created_at else "",
+            token.started_at.isoformat() if token.started_at else "",
+            token.finished_at.isoformat() if token.finished_at else "",
+        ])
+    return response
 
 
 @api_view(["POST"])
