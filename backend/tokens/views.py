@@ -25,6 +25,13 @@ class PublicTokenCreationThrottle(AnonRateThrottle):
     scope = "token_creation"
 
 
+def safe_csv_cell(value):
+    """Prevent spreadsheet formula execution when CSV values are opened."""
+    if isinstance(value, str) and value.startswith(("=", "+", "-", "@", "\\t", "\\r")):
+        return "'" + value
+    return value
+
+
 def user_can_manage_queue(user, queue):
     if not user or not user.is_authenticated:
         return False
@@ -131,8 +138,8 @@ def export_queue_tokens_view(request, queue_id):
     for token in tokens:
         writer.writerow([
             token.number,
-            token.name,
-            token.phone,
+            safe_csv_cell(token.name),
+            safe_csv_cell(token.phone),
             token.status,
             token.created_at.isoformat() if token.created_at else "",
             token.started_at.isoformat() if token.started_at else "",
