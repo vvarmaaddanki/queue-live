@@ -83,7 +83,7 @@ def create_token_view(request):
 
     return JsonResponse({
         "message": "Token created successfully",
-"public_id": str(token.public_id),
+        "public_id": str(token.public_id),
         "name": token.name,
         "queue_id": str(token.queue_id),
         "service_date": str(token.service_date),
@@ -111,8 +111,7 @@ def call_next_view(request, queue_id):
 
     return JsonResponse({
         "message": "Next customer called",
-        "token_id": token.id,
-        "name": token.name,
+"name": token.name,
         "queue_id": str(token.queue_id),
         "number": token.number,
         "status": token.status,
