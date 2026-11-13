@@ -38,7 +38,7 @@ export default function TokenStatus() {
     const fetchStatus = async () => {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/tokens/${tokenId}/status/`
+          `${API_BASE_URL}/api/tokens/public/${tokenId}/status/`
         );
 
         if (!response.ok) {
@@ -91,7 +91,7 @@ export default function TokenStatus() {
           if (
             update.event === "token_called" ||
             update.event === "token_completed" ||
-            update.event === "token_skipped"
+            update.event === "token_skipped" ||\n            update.event === "token_cancelled" ||\n            update.event === "queue_status_changed"
           ) {
             fetchStatus();
           }
