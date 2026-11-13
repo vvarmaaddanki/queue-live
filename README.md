@@ -37,7 +37,7 @@ Queue Live is a full-stack queue management application for clinics, salons, tui
 ### Access and data handling
 - Staff queue actions check that the signed-in user belongs to the queue's business.
 - Public queue discovery lists open queues; authenticated staff can view their own business's queues, including closed queues.
-- Customer status and cancellation routes use a UUID rather than exposing the sequential database ID.
+- Customer status and cancellation routes use a UUID rather than exposing the sequential database ID. Public owner registration and customer token generation are rate-limited to reduce automated abuse.
 - Queue and token data are stored through Django models and migrations.
 
 ## Technology
