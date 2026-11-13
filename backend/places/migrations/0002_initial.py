@@ -1,5 +1,6 @@
 import uuid
 
+import django.db.models.deletion
 from django.db import migrations, models
 
 
@@ -64,6 +65,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="staffprofile",
             name="place",
-            field=models.ForeignKey(on_delete=models.deletion.CASCADE, related_name="staff", to="places.place"),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="staff", to="places.place"),
         ),
     ]
