@@ -125,6 +125,14 @@ class CustomerTokenCancellationTest(TestCase):
         )
         self.client = Client()
 
+    def test_customer_status_uses_public_uuid_not_database_id(self):
+        response = self.client.get(
+            f"/api/tokens/public/{self.token.public_id}/status/"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("token_id", response.json())
+        self.assertEqual(response.json()["name"], "Customer")
+
     @patch("tokens.views.broadcast_queue_update")
     def test_customer_can_cancel_waiting_token(self, broadcast):
         response = self.client.post(
