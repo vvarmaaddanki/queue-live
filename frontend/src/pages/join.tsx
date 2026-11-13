@@ -16,6 +16,7 @@ type JoinProps = {
 
 type JoinedToken = {
   token_id: number;
+  public_id: string;
   name: string;
   queue_id: string;
   service_date: string;
@@ -50,6 +51,7 @@ export default function Join({ queues, onBack }: JoinProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [token, setToken] = useState<JoinedToken | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -177,6 +179,7 @@ export default function Join({ queues, onBack }: JoinProps) {
           },
           body: JSON.stringify({
             name: customerName,
+            phone: phone.trim(),
             queue_id: queue.id,
           }),
         }
@@ -220,6 +223,25 @@ export default function Join({ queues, onBack }: JoinProps) {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cancelToken = async () => {
+    if (!token || !window.confirm("Cancel your waiting token?")) return;
+    setCancelling(true);
+    setError("");
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/tokens/public/${token.public_id}/cancel/`,
+        { method: "POST", headers: { Accept: "application/json" } }
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to cancel token.");
+      setToken((current) => current ? { ...current, status: data.status } : current);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to cancel token.");
+    } finally {
+      setCancelling(false);
     }
   };
 
