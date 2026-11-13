@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://queue-live-backend.onrender.com/api";
+const API_BASE_URL = `${(import.meta.env.VITE_API_BASE_URL || "https://queue-live-backend.onrender.com").replace(/\/$/, "")}/api`;
 
 export async function apiRequest<T>(
   endpoint: string,
@@ -25,11 +25,6 @@ export async function apiRequest<T>(
   } else {
     headers.delete("Authorization");
   }
-
-  console.log(
-    `[apiRequest] ${cleanEndpoint} | Token exists:`,
-    Boolean(accessToken)
-  );
 
   const response = await fetch(`${API_BASE_URL}${cleanEndpoint}`, {
     ...options,
