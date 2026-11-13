@@ -15,6 +15,7 @@ type Queue = {
 
 type QueueResponse = {
   queues: Queue[];
+  role?: string | null;
 };
 
 type QueueToken = {
@@ -61,6 +62,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [createQueueLoading, setCreateQueueLoading] = useState(false);
 
   const [queues, setQueues] = useState<Queue[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [selectedQueueId, setSelectedQueueId] = useState<string | null>(null);
   const [tokens, setTokens] = useState<QueueToken[]>([]);
   const [queueName, setQueueName] = useState("");
@@ -195,6 +197,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
 
     setIsAuthenticated(false);
     setQueues([]);
+    setUserRole(null);
     setTokens([]);
     setSelectedQueueId(null);
     setQueueName("");
@@ -216,6 +219,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
       const availableQueues = response.queues ?? [];
 
       setQueues(availableQueues);
+      setUserRole(response.role ?? null);
 
       if (availableQueues.length > 0) {
         setSelectedQueueId((currentId) => {
@@ -608,6 +612,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             </button>
           </div>
 
+          {(userRole === "owner" || userRole === "superuser") && (
           <section className="admin-queue-selector">
             <form onSubmit={handleCreateQueue} className="admin-login-form">
               <label htmlFor="new-queue-name">Create a queue</label>
@@ -619,6 +624,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               </button>
             </form>
           </section>
+          )}
 
           <section className="admin-queue-selector">
             <label htmlFor="admin-queue-select">Select queue</label>
