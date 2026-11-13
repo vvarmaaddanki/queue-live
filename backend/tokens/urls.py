@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path("generate/", views.create_token_view, name="create_token"),
+    path("queues/<uuid:queue_id>/export/", views.export_queue_tokens_view, name="export_queue_tokens"),
     path("queues/<uuid:queue_id>/call-next/", views.call_next_view, name="call_next"),
     path("queues/<uuid:queue_id>/", views.queue_tokens_view, name="queue_tokens"),
     path("public/<uuid:public_id>/status/", views.token_status_view, name="token_status"),
