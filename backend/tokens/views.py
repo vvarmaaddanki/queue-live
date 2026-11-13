@@ -3,7 +3,8 @@ import uuid
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from django.core.exceptions import ObjectDoesNotExist\nfrom django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -23,7 +24,7 @@ def user_can_manage_queue(user, queue):
         return True
     try:
         profile = user.staff_profile
-    except Exception:
+    except ObjectDoesNotExist:
         return False
     return profile.place_id == queue.place_id and profile.role in ("owner", "staff")
 
