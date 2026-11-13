@@ -173,6 +173,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_RATES": {
         "owner_registration": "5/hour",
+        "token_creation": "20/hour",
     },
 }
 CSRF_TRUSTED_ORIGINS = [
