@@ -4,6 +4,14 @@ import django.utils.timezone
 from django.db import migrations, models
 
 
+def copy_customer_names(apps, schema_editor):
+    Token = apps.get_model("tokens", "Token")
+    database = schema_editor.connection.alias
+    Token.objects.using(database).exclude(customer_name="").update(
+        name=models.F("customer_name")
+    )
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -17,6 +25,7 @@ class Migration(migrations.Migration):
             field=models.CharField(default=django.utils.timezone.now, max_length=100),
             preserve_default=False,
         ),
+        migrations.RunPython(copy_customer_names, migrations.RunPython.noop),
         migrations.AlterField(
             model_name='token',
             name='number',
