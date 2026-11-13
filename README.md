@@ -26,6 +26,7 @@ Queue Live is a full-stack queue management application for clinics, salons, tui
 - Sign in with a Django account using JWT authentication.
 - View queues belonging to their own business.
 - Open or close a queue.
+- Export the current day's queue tokens as a CSV file.
 - View the day's tokens and their status.
 - Call the next waiting customer.
 - Complete or skip a token.
@@ -194,6 +195,7 @@ All paths below are relative to the backend origin.
 | GET | `/api/tokens/public/{public_uuid}/status/` | Public UUID | Read token status and waiting estimate |
 | POST | `/api/tokens/public/{public_uuid}/cancel/` | Public UUID | Cancel a waiting token |
 | GET | `/api/tokens/queues/{queue_uuid}/` | JWT + queue access | List today's tokens for a queue |
+| GET | `/api/tokens/queues/{queue_uuid}/export/` | JWT + queue access | Download today's queue tokens as CSV |
 | POST | `/api/tokens/queues/{queue_uuid}/call-next/` | JWT + queue access | Complete the current token and call the next waiting token |
 | POST | `/api/tokens/{token_id}/complete/` | JWT + queue access | Mark a serving token as completed |
 | POST | `/api/tokens/{token_id}/skip/` | JWT + queue access | Skip a waiting or serving token |
@@ -245,7 +247,7 @@ The next development priorities are:
 - Finish migration and deployment checks without risking existing production data.
 - Improve token generation under simultaneous customer requests.
 - Add a public QR-based queue joining flow.
-- Add staff-facing queue display and daily CSV export.
+- Add staff-facing queue display and QR-based joining flow.
 - Add remaining Phase 2 features after the core queue flow is stable.
 
 SMS/WhatsApp notifications, online payments, AI chatbots and native mobile apps are not part of the current scope.
