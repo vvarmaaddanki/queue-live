@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { apiRequest } from "../api/client";
 import "./AdminDashboard.css";
 
-const API_BASE_URL = "https://queue-live-backend.onrender.com/api";
+const API_BASE_URL = `${(import.meta.env.VITE_API_BASE_URL || "https://queue-live-backend.onrender.com").replace(/\/$/, "")}/api`;
 
 type Queue = {
-  id: number;
+  id: string;
   public_id: string;
   name: string;
   place: string;
@@ -27,7 +27,7 @@ type QueueToken = {
 };
 
 type QueueTokensResponse = {
-  queue_id: number;
+  queue_id: string;
   queue_name: string;
   tokens: QueueToken[];
 };
@@ -51,7 +51,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [loginLoading, setLoginLoading] = useState(false);
 
   const [queues, setQueues] = useState<Queue[]>([]);
-  const [selectedQueueId, setSelectedQueueId] = useState<number | null>(null);
+  const [selectedQueueId, setSelectedQueueId] = useState<string | null>(null);
   const [tokens, setTokens] = useState<QueueToken[]>([]);
   const [queueName, setQueueName] = useState("");
 
@@ -182,7 +182,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
   }, [isAuthenticated]);
 
   // Load tokens for the selected queue.
-  const loadTokens = useCallback(async (queueId: number) => {
+  const loadTokens = useCallback(async (queueId: string) => {
     if (!localStorage.getItem("access")) {
       setIsAuthenticated(false);
       return;
@@ -429,9 +429,7 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
               id="admin-queue-select"
               value={selectedQueueId ?? ""}
               onChange={(event) =>
-                setSelectedQueueId(
-                  event.target.value ? Number(event.target.value) : null
-                )
+                setSelectedQueueId(event.target.value || null)
               }
               disabled={loadingQueues || queues.length === 0}
             >
