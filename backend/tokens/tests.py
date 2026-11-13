@@ -208,3 +208,59 @@ class QueueCsvExportTests(TestCase):
             f"/api/tokens/queues/{self.queue.id}/export/"
         )
         self.assertIn(response.status_code, (401, 403))
+
+
+class StaffTokenActionTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.place = Place.objects.create(name="Action Clinic", kind="clinic")
+        self.other_place = Place.objects.create(name="Other Action Clinic", kind="clinic")
+        self.queue = Queue.objects.create(place=self.place, name="General")
+        self.owner = User.objects.create_user(username="action-owner", password="test-password")
+        StaffProfile.objects.create(user=self.owner, place=self.place, role=StaffProfile.Role.OWNER)
+        self.other_staff = User.objects.create_user(username="action-other", password="test-password")
+        StaffProfile.objects.create(user=self.other_staff, place=self.other_place, role=StaffProfile.Role.OWNER)
+        self.client = APIClient()
+
+    @patch("tokens.views.broadcast_queue_update")
+    def test_owner_can_complete_serving_token(self, broadcast):
+        token = create_token(queue_id=self.queue.pk, name="Serving customer")
+        token.status = Token.Status.SERVING
+        token.save(update_fields=["status"])
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(f"/api/tokens/{token.id}/complete/")
+        self.assertEqual(response.status_code, 200)
+        token.refresh_from_db()
+        self.assertEqual(token.status, Token.Status.DONE)
+        self.assertIsNotNone(token.finished_at)
+        broadcast.assert_called_once()
+
+    @patch("tokens.views.broadcast_queue_update")
+    def test_owner_can_skip_waiting_token(self, broadcast):
+        token = create_token(queue_id=self.queue.pk, name="Waiting customer")
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(f"/api/tokens/{token.id}/skip/")
+        self.assertEqual(response.status_code, 200)
+        token.refresh_from_db()
+        self.assertEqual(token.status, Token.Status.SKIPPED)
+        broadcast.assert_called_once()
+
+    def test_other_business_owner_cannot_complete_token(self):
+        token = create_token(queue_id=self.queue.pk, name="Private customer")
+        token.status = Token.Status.SERVING
+        token.save(update_fields=["status"])
+        self.client.force_authenticate(self.other_staff)
+        response = self.client.post(f"/api/tokens/{token.id}/complete/")
+        self.assertEqual(response.status_code, 403)
+        token.refresh_from_db()
+        self.assertEqual(token.status, Token.Status.SERVING)
+
+    def test_completed_token_cannot_be_skipped_again(self):
+        token = create_token(queue_id=self.queue.pk, name="Completed customer")
+        token.status = Token.Status.DONE
+        token.save(update_fields=["status"])
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(f"/api/tokens/{token.id}/skip/")
+        self.assertEqual(response.status_code, 409)
+        token.refresh_from_db()
+        self.assertEqual(token.status, Token.Status.DONE)
