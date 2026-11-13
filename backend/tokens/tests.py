@@ -1,4 +1,5 @@
-from django.test import TestCase
+from django.test import TestCase, Client
+from unittest.mock import patch
 from django.contrib.auth import get_user_model
 
 from places.models import Place, Queue, StaffProfile
@@ -110,3 +111,38 @@ class QueueStaffAccessTest(TestCase):
             password="test-password",
         )
         self.assertTrue(user_can_manage_queue(admin, self.queue))
+
+
+
+class CustomerTokenCancellationTest(TestCase):
+    def setUp(self):
+        self.place = Place.objects.create(name="Cancellation Clinic", kind="clinic")
+        self.queue = Queue.objects.create(place=self.place, name="General")
+        self.token = create_token(
+            queue_id=self.queue.pk,
+            name="Customer",
+            phone="9876543210",
+        )
+        self.client = Client()
+
+    @patch("tokens.views.broadcast_queue_update")
+    def test_customer_can_cancel_waiting_token(self, broadcast):
+        response = self.client.post(
+            f"/api/tokens/public/{self.token.public_id}/cancel/"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.token.refresh_from_db()
+        self.assertEqual(self.token.status, Token.Status.CANCELLED)
+        broadcast.assert_called_once()
+
+    @patch("tokens.views.broadcast_queue_update")
+    def test_customer_cannot_cancel_serving_token(self, broadcast):
+        self.token.status = Token.Status.SERVING
+        self.token.save(update_fields=["status"])
+        response = self.client.post(
+            f"/api/tokens/public/{self.token.public_id}/cancel/"
+        )
+        self.assertEqual(response.status_code, 409)
+        self.token.refresh_from_db()
+        self.assertEqual(self.token.status, Token.Status.SERVING)
+        broadcast.assert_not_called()
