@@ -10,11 +10,24 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 
 from places.models import Queue
 from .models import Token
 from .services import create_token, call_next
+
+
+def user_can_manage_queue(user, queue):
+    """Allow a superuser or a staff profile assigned to this queue's place."""
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    try:
+        profile = user.staff_profile
+    except Exception:
+        return False
+    return profile.place_id == queue.place_id and profile.role in ("owner", "staff")
 
 
 # -----------------------------------
@@ -127,12 +140,15 @@ def create_token_view(request):
 # -----------------------------------
 
 @api_view(["POST"])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAuthenticated])
 def call_next_view(request, queue_id):
     queue = get_object_or_404(
         Queue,
         id=queue_id,
     )
+
+    if not user_can_manage_queue(request.user, queue):
+        return JsonResponse({"error": "You do not have access to this queue"}, status=403)
 
     token = call_next(queue.id)
 
@@ -233,12 +249,15 @@ def token_status_view(request, token_id):
 # -----------------------------------
 
 @api_view(["GET"])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAuthenticated])
 def queue_tokens_view(request, queue_id):
     queue = get_object_or_404(
         Queue,
         id=queue_id,
     )
+
+    if not user_can_manage_queue(request.user, queue):
+        return JsonResponse({"error": "You do not have access to this queue"}, status=403)
 
     service_date = timezone.localdate()
 
@@ -280,12 +299,15 @@ def queue_tokens_view(request, queue_id):
 # -----------------------------------
 
 @api_view(["POST"])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAuthenticated])
 def complete_token_view(request, token_id):
     token = get_object_or_404(
         Token,
         id=token_id,
     )
+
+    if not token.queue or not user_can_manage_queue(request.user, token.queue):
+        return JsonResponse({"error": "You do not have access to this token"}, status=403)
 
     if token.status != Token.Status.SERVING:
         return JsonResponse(
@@ -329,12 +351,15 @@ def complete_token_view(request, token_id):
 # -----------------------------------
 
 @api_view(["POST"])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAuthenticated])
 def skip_token_view(request, token_id):
     token = get_object_or_404(
         Token,
         id=token_id,
     )
+
+    if not token.queue or not user_can_manage_queue(request.user, token.queue):
+        return JsonResponse({"error": "You do not have access to this token"}, status=403)
 
     allowed_statuses = [
         Token.Status.WAITING,
