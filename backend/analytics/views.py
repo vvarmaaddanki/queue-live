@@ -19,12 +19,16 @@ def health_check(request):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def queue_list(request):
+    role = None
     if request.user.is_authenticated:
         if request.user.is_superuser:
+            role = "superuser"
             queues = Queue.objects.select_related("place").all()
         else:
             try:
-                place_id = request.user.staff_profile.place_id
+                profile = request.user.staff_profile
+                place_id = profile.place_id
+                role = profile.role
             except ObjectDoesNotExist:
                 queues = Queue.objects.none()
             else:
@@ -43,7 +47,7 @@ def queue_list(request):
         }
         for queue in queues.order_by("name")
     ]
-    return JsonResponse({"queues": data})
+    return JsonResponse({"queues": data, "role": role})
 
 
 @api_view(["POST"])
