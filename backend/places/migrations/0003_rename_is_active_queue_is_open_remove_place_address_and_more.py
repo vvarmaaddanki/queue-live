@@ -16,22 +16,6 @@ class Migration(migrations.Migration):
             old_name='is_active',
             new_name='is_open',
         ),
-        migrations.RemoveField(
-            model_name='place',
-            name='address',
-        ),
-        migrations.RemoveField(
-            model_name='queue',
-            name='capacity',
-        ),
-        migrations.RemoveField(
-            model_name='queue',
-            name='current_people',
-        ),
-        migrations.RemoveField(
-            model_name='queue',
-            name='location',
-        ),
         migrations.AddField(
             model_name='place',
             name='kind',
