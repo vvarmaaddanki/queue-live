@@ -17,7 +17,7 @@ Queue Live is a full-stack queue management application for clinics, salons, tui
 ### Customer
 - View queues that are currently open.
 - Join a queue with a name and optional mobile number.
-- Receive a token number and a private public-UUID tracking link/identifier.
+- Receive a token number and a public-UUID tracking identifier.
 - View waiting position and estimated waiting time.
 - Track token status with WebSocket updates and automatic polling as a fallback.
 - Cancel a token while it is still waiting.
