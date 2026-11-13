@@ -240,7 +240,7 @@ def queue_tokens_view(request, queue_id):
 @permission_classes([IsAuthenticated])
 @transaction.atomic
 def complete_token_view(request, token_id):
-    token = get_object_or_404(Token.objects.select_related("queue").select_for_update(), id=token_id)
+    token = get_object_or_404(Token.objects.select_for_update(), id=token_id)
     if not token.queue or not user_can_manage_queue(request.user, token.queue):
         return JsonResponse({"error": "You do not have access to this token"}, status=403)
     if token.status != Token.Status.SERVING:
