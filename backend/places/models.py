@@ -1,5 +1,6 @@
 import uuid
 from statistics import median
+
 from django.conf import settings
 from django.db import models
 
@@ -10,18 +11,11 @@ class Place(models.Model):
         SALON = "salon", "Salon"
         TUITION = "tuition", "Tuition centre"
         OTHER = "other", "Other"
-    id = models.UUIDField(
-    primary_key=True,
-    default=uuid.uuid4,
-    editable=False,
-)
 
-    name = models.CharField(max_length=120)
-    kind = models.CharField(
-        max_length=20,
-        choices=Kind.choices,
-        default=Kind.CLINIC,
-    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=150)
+    address = models.CharField(max_length=255, blank=True)
+    kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.CLINIC)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -43,30 +37,19 @@ class StaffProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="staff",
     )
-    role = models.CharField(
-        max_length=10,
-        choices=Role.choices,
-        default=Role.OWNER,
-    )
+    role = models.CharField(max_length=10, choices=Role.choices, default=Role.OWNER)
 
 
 class Queue(models.Model):
-    public_id = models.UUIDField(
-        default=uuid.uuid4,
-        unique=True,
-        editable=False,
-    )
-    id = models.UUIDField(
-    primary_key=True,
-    default=uuid.uuid4,
-    editable=False,
-)
-    place = models.ForeignKey(
-        Place,
-        on_delete=models.CASCADE,
-        related_name="queues",
-    )
-    name = models.CharField(max_length=80)
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    place = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="queues")
+    name = models.CharField(max_length=100)
+    # Retained for compatibility with records created by the original schema.
+    location = models.CharField(max_length=200, blank=True)
+    capacity = models.PositiveIntegerField(default=50)
+    current_people = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
     is_open = models.BooleanField(default=True)
     default_minutes = models.PositiveSmallIntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -80,14 +63,11 @@ class Queue(models.Model):
             started_at__isnull=False,
             finished_at__isnull=False,
         ).order_by("-finished_at")[:10]
-
         minutes = [
-            (t.finished_at - t.started_at).total_seconds() / 60
-            for t in recent
+            (token.finished_at - token.started_at).total_seconds() / 60
+            for token in recent
         ]
-        minutes = [m for m in minutes if 0.2 < m < 120]
-
+        minutes = [value for value in minutes if 0.2 < value < 120]
         if len(minutes) < 3:
             return float(self.default_minutes)
-
         return round(median(minutes), 1)
