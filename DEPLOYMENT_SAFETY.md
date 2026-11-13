@@ -34,9 +34,9 @@ Perform these steps against a copy of the production database first:
    python manage.py sqlmigrate tokens 0003
    ```
 4. Restore the backup into a separate staging database. Never use the only production database as the rehearsal target.
-5. Apply the proposed migrations to staging only. Compare before/after row counts and verify sample businesses, queues, customers, phone numbers, token numbers, statuses and token links.
-6. If the rehearsal shows missing customer names, phone numbers, queue fields or token URLs, stop. Prepare a reviewed data-preserving migration or a controlled data-recovery plan before deployment.
-7. Confirm the rollback plan. For destructive schema/data changes, the reliable rollback is restoring the verified backup, not assuming reverse migrations can restore deleted values.
+6. Apply the proposed migrations to staging only. Compare before/after row counts and verify sample businesses, queues, customers, phone numbers, token numbers, statuses and token links.
+7. If the rehearsal shows missing customer names, phone numbers, queue fields or token URLs, stop. Prepare a reviewed data-preserving migration or a controlled data-recovery plan before deployment.
+8. Confirm the rollback plan. For destructive schema/data changes, the reliable rollback is restoring the verified backup, not assuming reverse migrations can restore deleted values.
 
 ## Minimum PostgreSQL backup example
 
