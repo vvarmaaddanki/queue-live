@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./join.css";
 
 type Queue = {
@@ -43,6 +44,7 @@ const API_BASE_URL = (
 ).replace(/\/$/, "");
 
 export default function Join({ queues, onBack }: JoinProps) {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [selectedQueue, setSelectedQueue] = useState("");
@@ -203,10 +205,14 @@ export default function Join({ queues, onBack }: JoinProps) {
         );
       }
 
+      if (!responseData.public_id) {
+        throw new Error("The server did not return a valid token link. Please try again.");
+      }
       setToken({
         ...responseData,
         queue_name: queue.name,
       });
+      navigate(`/token/${responseData.public_id}`);
     } catch (err) {
       if (err instanceof TypeError) {
         setError(
