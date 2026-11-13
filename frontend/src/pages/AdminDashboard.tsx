@@ -307,6 +307,28 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
     );
   };
 
+  const selectedQueue = queues.find((queue) => queue.id === selectedQueueId);
+
+  const toggleQueueStatus = async () => {
+    if (!selectedQueue) return;
+    try {
+      setActionLoading(true);
+      setError("");
+      setNotice("");
+      const nextStatus = !selectedQueue.is_open;
+      await apiRequest(`/queues/${selectedQueue.id}/status/`, {
+        method: "POST",
+        body: JSON.stringify({ is_open: nextStatus }),
+      });
+      setNotice(nextStatus ? "Queue opened successfully." : "Queue closed successfully.");
+      await loadQueues();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update queue status.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const servingToken = tokens.find((token) => token.status === "serving");
   const waitingTokens = tokens.filter((token) => token.status === "waiting");
   const completedTokens = tokens.filter((token) => token.status === "done");
@@ -420,6 +442,16 @@ function AdminDashboard({ onBack }: AdminDashboardProps) {
             >
               ↻ Refresh
             </button>
+
+            {selectedQueue && (
+              <button
+                className="admin-refresh-button"
+                onClick={toggleQueueStatus}
+                disabled={actionLoading}
+              >
+                {selectedQueue.is_open ? "Close Queue" : "Open Queue"}
+              </button>
+            )}
           </div>
 
           <section className="admin-queue-selector">
