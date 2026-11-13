@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from unittest.mock import patch
 from rest_framework.test import APIClient
 
 from places.models import Place, Queue, StaffProfile
@@ -48,7 +49,8 @@ class QueueManagementApiTests(TestCase):
         self.assertIn(str(self.closed_queue.id), queue_ids)
         self.assertNotIn(str(self.other_queue.id), queue_ids)
 
-    def test_owner_can_close_and_reopen_own_queue(self):
+    @patch("analytics.views.broadcast_queue_update")
+    def test_owner_can_close_and_reopen_own_queue(self, broadcast):
         self.client.force_authenticate(self.owner)
         url = f"/api/queues/{self.open_queue.id}/status/"
         close_response = self.client.post(url, {"is_open": False}, format="json")
